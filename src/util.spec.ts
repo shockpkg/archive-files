@@ -1,4 +1,5 @@
 import {
+	fsLstatExists,
 	pathNormalize
 } from './util';
 
@@ -13,6 +14,21 @@ describe('util', () => {
 			expect(pathNormalize('/')).toBe('/');
 			expect(pathNormalize('/test')).toBe('/test');
 			expect(pathNormalize('/test/')).toBe('/test');
+		});
+	});
+
+	describe('fsLstatExists', () => {
+		it('file', async () => {
+			const stat = await fsLstatExists(
+				'spec/this-file-does-not-exist'
+			);
+			expect(stat).toBeNull();
+		});
+		it('dir', async () => {
+			const stat = await fsLstatExists(
+				'spec/this-dir-does-not-exist/file.txt'
+			);
+			expect(stat).toBeNull();
 		});
 	});
 });
