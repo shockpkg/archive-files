@@ -342,7 +342,7 @@ export abstract class Entry extends Object {
 				break;
 			}
 			default: {
-				throw errorUnsupportedPathType(this.type);
+				throw errorUnsupportedPathType(type);
 			}
 		}
 
@@ -563,9 +563,6 @@ export abstract class Entry extends Object {
 
 		// Set attributes.
 		await this.setAttributes(path, null, options);
-
-		// Remove this path from attribute setting (in case was replaced).
-		this.archive.afterReadSetAttributesRemove(path);
 	}
 }
 

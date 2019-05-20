@@ -30,5 +30,11 @@ describe('util', () => {
 			);
 			expect(stat).toBeNull();
 		});
+		it('file as dir', async () => {
+			const stat = await fsLstatExists(
+				'spec/fixtures/files/lorem.txt/dir'
+			);
+			expect(stat).toBeNull();
+		});
 	});
 });

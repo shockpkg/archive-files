@@ -11,9 +11,9 @@ import {
 } from './types';
 
 const fseLchmod = fse.lchmod as any as (typeof fse.chmod | undefined);
-
-// tslint:disable-next-line no-bitwise
-const O_WRONLY_SYMLINK = fse.constants.O_WRONLY | fse.constants.O_SYMLINK;
+const fseConstants = fse.constants;
+const O_WRONLY = fseConstants.O_WRONLY;
+const O_SYMLINK = defaultNull(fseConstants.O_SYMLINK);
 
 export const streamPipeline = promisify(pipeline);
 
@@ -27,7 +27,7 @@ export const streamPipeline = promisify(pipeline);
 export function defaultValue<T, U>(
 	value: T,
 	defaultValue: U
-): Exclude<T, undefined> {
+): Exclude<T | U, undefined> {
 	return value === undefined ? defaultValue : (value as any);
 }
 
@@ -257,12 +257,12 @@ export async function streamToFile(
  * @param mode File mode.
  */
 export async function fsLchmod(path: string, mode: number) {
-	if (fseLchmod) {
+	if (fseLchmod && O_SYMLINK !== null) {
 		await fseLchmod(path, mode);
 	}
 }
 
-export const fsLchmodSupported = !!fsLchmod;
+export const fsLchmodSupported = !!(fseLchmod && O_SYMLINK !== null);
 
 /**
  * Wrapper for utimes.
@@ -292,19 +292,20 @@ export async function fsLutimes(
 	mtime: Date
 ) {
 	// If lchmod is unsupported, lutimes should be also.
-	if (!fseLchmod) {
+	if (!(fseLchmod && O_SYMLINK !== null)) {
 		return;
 	}
 
 	// Node does not currently implement lutimes.
 	// It can be done though the file descriptor.
 	// Essentially this is what the lchmod implementation does.
-	const fd = await fse.open(path, O_WRONLY_SYMLINK);
+	// tslint:disable-next-line no-bitwise
+	const fd = await fse.open(path, O_WRONLY | O_SYMLINK);
 	await fse.futimes(fd, atime, mtime);
 	await fse.close(fd);
 }
 
-export const fsLutimesSupported = !!fseLchmod;
+export const fsLutimesSupported = !!(fseLchmod && O_SYMLINK !== null);
 
 /**
  * A readlink wrapper that returns raw link buffer.
@@ -372,7 +373,11 @@ export async function fsLstatExists(path: string) {
 		return await fsLstat(path);
 	}
 	catch (err) {
-		if (err.code === 'ENOENT') {
+		const code = err.code;
+		if (
+			code === 'ENOENT' ||
+			code === 'ENOTDIR'
+		) {
 			return null;
 		}
 		throw err;

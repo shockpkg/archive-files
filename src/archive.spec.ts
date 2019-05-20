@@ -212,6 +212,14 @@ export function testArchive(
 					await archive.read(async entry => {
 						expect(zipPathIsMacResource(entry.path)).toBe(false);
 
+						// Only extract and test resource forks on MacOS.
+						if (
+							!platformIsMac &&
+							entry.type === PathType.RESOURCE_FORK
+						) {
+							return;
+						}
+
 						entries.push(entry);
 						const dest = pathJoin(specTmpExtractPath, entry.path);
 						await entry.extract(dest);
