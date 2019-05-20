@@ -33,6 +33,8 @@ export const specTmpArchivePath = pathJoin(specTmpPath, 'archive');
 export const specTmpExtractPath = pathJoin(specTmpPath, 'extract');
 export const specFixturesPath = pathJoin('spec', 'fixtures');
 
+export const mtimePrecisionMax = 2000;
+
 function bufferToStream(buffer: Buffer) {
 	const stream = new Duplex();
 	stream.push(buffer);
@@ -246,7 +248,9 @@ export function testArchive(
 							const timeDiff = Math.abs(
 								stat.mtime.getTime() - setMtime.getTime()
 							);
-							expect(timeDiff).toBeLessThanOrEqual(2);
+							expect(timeDiff).toBeLessThanOrEqual(
+								mtimePrecisionMax
+							);
 						}
 
 						if (!platformIsWin && mode !== null) {
