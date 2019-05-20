@@ -243,7 +243,8 @@ export function testArchive(
 						}
 
 						if (setMtime) {
-							expect(stat.mtime).toEqual(setMtime);
+							expect(stat.mtime.toISOString())
+								.toBe(setMtime.toISOString());
 						}
 
 						if (!platformIsWin && mode !== null) {
