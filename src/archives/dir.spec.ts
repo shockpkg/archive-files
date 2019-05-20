@@ -2,6 +2,7 @@ import {join as pathJoin} from 'path';
 
 import {
 	ArchiveTest,
+	safeToExtract,
 	specTmpArchivePath,
 	testArchive
 } from '../archive.spec';
@@ -16,9 +17,12 @@ describe('archives/dir', () => {
 			async () => {
 				// Extract test archive for dummy contents.
 				const archive = new ArchiveTest('dummy.file');
-				await archive.read(async info => {
-					const dest = pathJoin(specTmpArchivePath, info.path);
-					await info.extract(dest);
+				await archive.read(async entry => {
+					if (!safeToExtract(entry)) {
+						return;
+					}
+					const dest = pathJoin(specTmpArchivePath, entry.path);
+					await entry.extract(dest);
 				});
 			}
 		);

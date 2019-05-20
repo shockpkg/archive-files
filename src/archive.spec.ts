@@ -37,16 +37,39 @@ export const specFixturesPath = pathJoin('spec', 'fixtures');
 
 export const mtimePrecisionMax = 2000;
 
+export const platform = osPlatform();
+export const platformIsMac = platform === 'darwin';
+export const platformIsWin = (
+	platform === 'win32' ||
+	(platform as string) === 'win64'
+);
+
+export function safeToExtract(entry: Entry) {
+	// Only extract and test resource forks on MacOS.
+	if (
+		!platformIsMac &&
+		entry.type === PathType.RESOURCE_FORK
+	) {
+		return false;
+	}
+
+	// Symbolic links on Windows are funky.
+	if (
+		platformIsWin &&
+		entry.type === PathType.SYMLINK
+	) {
+		return false;
+	}
+
+	return true;
+}
+
 function bufferToStream(buffer: Buffer) {
 	const stream = new Duplex();
 	stream.push(buffer);
 	stream.push(null);
 	return stream as Readable;
 }
-
-export const platform = osPlatform();
-export const platformIsMac = platform === 'darwin';
-export const platformIsWin = platform === 'win32';
 
 const testEntries = [
 	{
@@ -140,12 +163,12 @@ const testEntries = [
 		size: 4,
 		readData: async () => bufferToStream(Buffer.from('data')),
 	},
-	platformIsMac ? {
+	{
 		type: PathType.RESOURCE_FORK,
 		pathRaw: 'rsrc-content.bin',
 		size: 9,
 		readRsrc: async () => bufferToStream(Buffer.from('rsrc fork'))
-	} : null
+	}
 ];
 
 export class EntryTest extends Entry {
@@ -167,9 +190,6 @@ export class ArchiveTest extends Archive {
 
 	protected async _read(itter: (entry: EntryTest) => Promise<any>) {
 		for (const info of testEntries) {
-			if (!info) {
-				continue;
-			}
 			const entry = new this.Entry({archive: this, ...info});
 			const ret = await entry.trigger(itter);
 			if (ret === false) {
@@ -214,11 +234,7 @@ export function testArchive(
 					await archive.read(async entry => {
 						expect(zipPathIsMacResource(entry.path)).toBe(false);
 
-						// Only extract and test resource forks on MacOS.
-						if (
-							!platformIsMac &&
-							entry.type === PathType.RESOURCE_FORK
-						) {
+						if (!safeToExtract(entry)) {
 							return;
 						}
 
@@ -289,7 +305,7 @@ export function testArchive(
 					const archive = new ArchiveConstructor(path);
 
 					let count = 0;
-					await archive.read(async info => {
+					await archive.read(async entry => {
 						count++;
 						return false;
 					});
