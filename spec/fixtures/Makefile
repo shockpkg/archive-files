@@ -14,14 +14,14 @@ all: test-archive-zip.zip \
 test-archive:
 	mkdir 'test-archive'
 	#
-	cat 'files/lorem.txt' > 'test-archive/lorem.txt'
-	cat 'files/lorem.txt' > 'test-archive/lorem.bin'
+	cat 'files/lorem.bin' > 'test-archive/lorem.dat'
+	cat 'files/lorem.bin' > 'test-archive/lorem.bin'
 	#
 	mkdir 'test-archive/dir'
-	cat 'files/lorem.txt' > 'test-archive/dir/lorem.txt'
+	cat 'files/lorem.bin' > 'test-archive/dir/lorem.bin'
 	#
 	mkdir 'test-archive/dir/sub'
-	cat 'files/lorem.txt' > 'test-archive/dir/sub/lorem.txt'
+	cat 'files/lorem.bin' > 'test-archive/dir/sub/lorem.bin'
 	#
 	cd 'test-archive'; ln -s 'lorem.bin' 'lorem-ln.bin'
 	cd 'test-archive'; ln -s './lorem.bin' 'lorem-ln-dot-slash.bin'
