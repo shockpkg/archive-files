@@ -1,0 +1,418 @@
+import fse from 'fs-extra';
+import {join as pathJoin} from 'path';
+import {
+	pipeline,
+	Readable
+} from 'stream';
+import {promisify} from 'util';
+
+import {
+	PathType
+} from './types';
+
+const fseLchmod = fse.lchmod as any as (typeof fse.chmod | undefined);
+
+// tslint:disable-next-line no-bitwise
+const O_WRONLY_SYMLINK = fse.constants.O_WRONLY | fse.constants.O_SYMLINK;
+
+export const streamPipeline = promisify(pipeline);
+
+/**
+ * Default value if value is undefined.
+ *
+ * @param value Value.
+ * @param defaultValue Default value.
+ * @return Value or the default value if undefined.
+ */
+export function defaultValue<T, U>(
+	value: T,
+	defaultValue: U
+): Exclude<T, undefined> {
+	return value === undefined ? defaultValue : (value as any);
+}
+
+/**
+ * Default null if value is undefined.
+ *
+ * @param value Value.
+ * @return Value or null if undefined.
+ */
+export function defaultNull<T>(value: T) {
+	return defaultValue(value, null);
+}
+
+/**
+ * Create internal error obeject.
+ *
+ * @return Error object.
+ */
+export function errorInternal() {
+	return new Error('Internal error');
+}
+
+/**
+ * Create unsupported path type error obeject.
+ *
+ * @return Error object.
+ */
+export function errorUnsupportedPathType(type: PathType) {
+	return new Error(`Unsupported path type: ${type}`);
+}
+
+/**
+ * Normalize an entry path.
+ *
+ * @param path Path string.
+ * @return Normalized path.
+ */
+export function pathNormalize(path: string) {
+	return path.replace(/\\/g, '/').replace(/([^\/])\/+$/, '$1');
+}
+
+/**
+ * Get path to the resource fork pseudo-file.
+ *
+ * @param path Path string.
+ * @return Resource fork pseudo-file path.
+ */
+export function pathResourceFork(path: string) {
+	return pathJoin(path, '..namedfork', 'rsrc');
+}
+
+/**
+ * Get path type from stat object, or null if unsupported.
+ *
+ * @param stat Stats object.
+ * @return Path type.
+ */
+export function statToPathType(stat: fse.Stats) {
+	if (stat.isSymbolicLink()) {
+		return PathType.SYMLINK;
+	}
+	else if (stat.isDirectory()) {
+		return PathType.DIRECTORY;
+	}
+	else if (stat.isFile()) {
+		return PathType.FILE;
+	}
+
+	// Unsupported type.
+	return null;
+}
+
+/**
+ * Get path type from stat mode, or null if unsupported.
+ *
+ * @param mode Stat mode.
+ * @return Path type.
+ */
+export function modeToPathType(mode: number) {
+	if (bitwiseAndEqual(mode, 0o0120000)) {
+		return PathType.SYMLINK;
+	}
+	if (bitwiseAndEqual(mode, 0o0040000)) {
+		return PathType.DIRECTORY;
+	}
+	if (bitwiseAndEqual(mode, 0o0100000)) {
+		return PathType.FILE;
+	}
+
+	// Unsupported type.
+	return null;
+}
+
+/**
+ * Get permission bits from mode value.
+ *
+ * @param mode Stat mode.
+ * @return Permission bits.
+ */
+export function modePermissionBits(mode: number) {
+	// tslint:disable-next-line: no-bitwise
+	return (mode & 0b111111111);
+}
+
+/**
+ * Check if all the bits set.
+ *
+ * @param value Bits value.
+ * @param mask Mask value.
+ * @return True of all the bits set.
+ */
+export function bitwiseAndEqual(value: number, mask: number) {
+	// tslint:disable-next-line: no-bitwise
+	return (value & mask) === mask;
+}
+
+/**
+ * Get Unix bits from the ZIP file external file attributes.
+ *
+ * @param attrs Attributes value.
+ * @return Unix bits or null.
+ */
+export function zipEfaToUnix(attrs: number) {
+	// tslint:disable-next-line: no-bitwise
+	return attrs >>> 16;
+}
+
+/**
+ * Get stat mode value from ZIP file external file attributes, if present.
+ *
+ * @param attrs Attributes value.
+ * @return Stat mode or null.
+ */
+export function zipEfaToUnixMode(attrs: number) {
+	const mode = zipEfaToUnix(attrs);
+
+	// Check if type bits are present, else no Unix info.
+	// tslint:disable-next-line: no-bitwise
+	return ((mode >> 12) & 0b1111) ? mode : null;
+}
+
+/**
+ * Get path type from attributes and path value from ZIP file entry.
+ *
+ * @param attrs Attributes value.
+ * @param path Entry path.
+ * @return Path type.
+ */
+export function zipPathTypeFromEfaAndPath(attrs: number, path: string) {
+	// Check for Unix stat type information.
+	const mode = zipEfaToUnixMode(attrs);
+	if (!mode) {
+		// No Unix type infromation, assume Windows info only.
+		// Only files and directories, with directores having a trailing slash.
+		return /[\\\/]$/.test(path) ? PathType.DIRECTORY : PathType.FILE;
+	}
+	return modeToPathType(mode);
+}
+
+/**
+ * Check if path is a Mac resource fork related path.
+ *
+ * @param path Zip path.
+ * @return Boolean value.
+ */
+export function zipPathIsMacResource(path: string) {
+	return /^__MACOSX(\\|\/|$)/.test(path);
+}
+
+/**
+ * Read a stream into a buffer.
+ * Reading a stream into a buffer should be avoided where possible.
+ * This is however useful for some small streams.
+ *
+ * @param stream Readable stream
+ * @param doneEvent The stream done event.
+ * @return Full buffer.
+ */
+export async function streamToBuffer(
+	stream: Readable,
+	doneEvent: string = 'close'
+) {
+	const buffer = await new Promise<Buffer>((resolve, reject) => {
+		const datas: Buffer[] = [];
+		let once = false;
+		const done = (err?: Error) => {
+			if (once) {
+				return;
+			}
+			once = true;
+			if (err) {
+				reject(err);
+				return;
+			}
+			resolve(Buffer.concat(datas));
+		};
+		stream.on('data', (data: Buffer) => {
+			datas.push(data);
+		});
+		stream.on('error', err => {
+			done(err);
+		});
+		stream.on(doneEvent, () => {
+			done();
+		});
+	});
+	return buffer;
+}
+
+/**
+ * Write stream source to file destination.
+ *
+ * @param source Stream source.
+ * @param destination File destination.
+ */
+export async function streamToFile(
+	source: Readable,
+	destination: fse.WriteStream
+) {
+	await streamPipeline(source, destination);
+}
+
+/**
+ * Wrapper for lchmod, does nothing on unsupported platforms.
+ *
+ * @param path File path.
+ * @param mode File mode.
+ */
+export async function fsLchmod(path: string, mode: number) {
+	if (fseLchmod) {
+		await fseLchmod(path, mode);
+	}
+}
+
+export const fsLchmodSupported = !!fsLchmod;
+
+/**
+ * Wrapper for utimes.
+ *
+ * @param path File path.
+ * @param atime Access time.
+ * @param mtime Modification time.
+ */
+export async function fsUtimes(
+	path: string,
+	atime: Date,
+	mtime: Date
+) {
+	await fse.utimes(path, atime, mtime);
+}
+
+/**
+ * Implementation of lutimes, does nothing on unsupported platforms.
+ *
+ * @param path File path.
+ * @param atime Access time.
+ * @param mtime Modification time.
+ */
+export async function fsLutimes(
+	path: string,
+	atime: Date,
+	mtime: Date
+) {
+	// If lchmod is unsupported, lutimes should be also.
+	if (!fseLchmod) {
+		return;
+	}
+
+	// Node does not currently implement lutimes.
+	// It can be done though the file descriptor.
+	// Essentially this is what the lchmod implementation does.
+	const fd = await fse.open(path, O_WRONLY_SYMLINK);
+	await fse.futimes(fd, atime, mtime);
+	await fse.close(fd);
+}
+
+export const fsLutimesSupported = !!fseLchmod;
+
+/**
+ * A readlink wrapper that returns raw link buffer.
+ *
+ * @param path Link path.
+ * @return Raw link.
+ */
+export async function fsReadlinkRaw(path: string) {
+	const r = await (fse.readlink as any)(path, 'buffer');
+	return r as Buffer;
+}
+
+/**
+ * Wrapper for symlink.
+ *
+ * @param path Path of symbolic link.
+ * @param target Target of symbolic link.
+ */
+export async function fsSymlink(
+	path: string | Buffer,
+	target: string | Buffer
+) {
+	await fse.symlink(target, path);
+}
+
+/**
+ * Wrapper for chmod.
+ *
+ * @param path File path.
+ * @param mode File mode.
+ */
+export async function fsChmod(path: string, mode: number) {
+	await fse.chmod(path, mode);
+}
+
+/**
+ * A readdir wrapper with consistent output.
+ *
+ * @param path Directory path.
+ * @return Directory listing.
+ */
+export async function fsReaddir(path: string) {
+	return (await fse.readdir(path)).sort();
+}
+
+/**
+ * An lstat wrapper.
+ *
+ * @param path Path string.
+ * @return Stat object.
+ */
+export async function fsLstat(path: string) {
+	const r = await fse.lstat(path);
+	return r;
+}
+
+/**
+ * An lstat wrapper returning null if not exist.
+ *
+ * @param path Path string.
+ * @return Stat object.
+ */
+export async function fsLstatExists(path: string) {
+	try {
+		return await fsLstat(path);
+	}
+	catch (err) {
+		if (err.code === 'ENOENT') {
+			return null;
+		}
+		throw err;
+	}
+}
+
+/**
+ * Walk file system path.
+ * If callback returns false skips recursing a directory.
+ * If callback returns null aborts walking.
+ *
+ * @param base Directory path.
+ * @param itter Callback for each entry.
+ */
+export async function fsWalk(
+	base: string,
+	itter: (
+		path: string,
+		stat: fse.Stats
+	) => Promise<boolean | null | void>
+) {
+	const stack = (await fsReaddir(base)).reverse();
+	while (stack.length) {
+		const entry = stack.pop() as string;
+		const fullPath = pathJoin(base, entry);
+		const stat = await fsLstat(fullPath);
+
+		// Callback, possibly stop recursion on directory.
+		const recurse = await itter(entry, stat);
+		if (recurse === null) {
+			break;
+		}
+		if (recurse === false || !stat.isDirectory()) {
+			continue;
+		}
+
+		// Recurse down.
+		const subs = await fsReaddir(fullPath);
+		for (let i = subs.length; i--;) {
+			stack.push(pathJoin(entry, subs[i]));
+		}
+	}
+}
