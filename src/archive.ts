@@ -55,6 +55,13 @@ export interface IExtractOptions {
 	 * @defaultValue false
 	 */
 	replace?: boolean;
+
+	/**
+	 * Extract resource fork as a file.
+	 *
+	 * @defaultValue false
+	 */
+	resourceForkAsFile?: boolean;
 }
 
 export interface IEntryInfo {
@@ -414,20 +421,17 @@ export abstract class Entry extends Object {
 	}
 
 	/**
-	 * Extract as a file.
+	 * Base function for extracting stream to a file.
 	 *
 	 * @param path Extract path.
+	 * @param reader Reader function.
 	 * @param options Extract options.
 	 */
-	protected async _extractFile(
+	protected async _extractStreamToFile(
 		path: string,
+		reader: () => Promise<Readable>,
 		options: IExtractOptions
 	) {
-		const readData = this._readData;
-		if (!readData) {
-			throw errorInternal();
-		}
-
 		const replace = defaultValue(options.replace, false);
 
 		// Check if something exists at path, optionally removing.
@@ -447,12 +451,30 @@ export abstract class Entry extends Object {
 
 		// Write file.
 		await streamToFile(
-			await readData(),
+			await reader(),
 			fseCreateWriteStream(path, {flags: 'wx'})
 		);
 
 		// Set attributes.
 		await this.setAttributes(path, null, options);
+	}
+
+	/**
+	 * Extract as a file.
+	 *
+	 * @param path Extract path.
+	 * @param options Extract options.
+	 */
+	protected async _extractFile(
+		path: string,
+		options: IExtractOptions
+	) {
+		const readData = this._readData;
+		if (!readData) {
+			throw errorInternal();
+		}
+
+		await this._extractStreamToFile(path, readData, options);
 	}
 
 	/**
@@ -468,6 +490,12 @@ export abstract class Entry extends Object {
 		const readRsrc = this._readRsrc;
 		if (!readRsrc) {
 			throw errorInternal();
+		}
+
+		// Optionally extract as a data file.
+		if (defaultValue(options.resourceForkAsFile, false)) {
+			await this._extractStreamToFile(path, readRsrc, options);
+			return;
 		}
 
 		// Check if file exists at path, else throw.
