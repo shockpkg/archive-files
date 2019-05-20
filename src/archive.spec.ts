@@ -90,7 +90,7 @@ const testEntries = [
 	{
 		type: PathType.SYMLINK,
 		pathRaw: 'symlink',
-		readSymlink: async () => 'target'
+		readSymlink: async () => Buffer.from('target')
 	},
 	{
 		type: PathType.FILE,
@@ -128,7 +128,7 @@ const testEntries = [
 		mode: 0o644,
 		atime: new Date('2013-02-16'),
 		mtime: new Date('2014-03-24'),
-		readSymlink: async () => 'target'
+		readSymlink: async () => Buffer.from('target')
 	},
 	{
 		type: PathType.SYMLINK,
@@ -136,7 +136,7 @@ const testEntries = [
 		mode: 0o755,
 		atime: new Date('2013-02-16'),
 		mtime: new Date('2014-03-24'),
-		readSymlink: async () => 'target'
+		readSymlink: async () => Buffer.from('target')
 	},
 	{
 		type: PathType.DIRECTORY,

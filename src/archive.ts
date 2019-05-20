@@ -138,7 +138,7 @@ export interface IEntryInfo {
 	/**
 	 * Read symlink.
 	 */
-	readSymlink?: (() => Promise<string | Buffer>) | null;
+	readSymlink?: (() => Promise<Buffer>) | null;
 }
 
 /**
