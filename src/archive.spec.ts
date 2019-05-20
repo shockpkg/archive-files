@@ -232,7 +232,8 @@ export function testArchive(
 
 					const entries: Entry[] = [];
 					await archive.read(async entry => {
-						expect(zipPathIsMacResource(entry.path)).toBe(false);
+						expect(zipPathIsMacResource(entry.path))
+							.toBe(false, entry.path);
 
 						if (!safeToExtract(entry)) {
 							return;
@@ -261,12 +262,12 @@ export function testArchive(
 								type === PathType.FILE ||
 								type === PathType.SYMLINK
 							) {
-								expect(stat.size).toBe(size);
+								expect(stat.size).toBe(size, dest);
 							}
 							else if (type === PathType.RESOURCE_FORK) {
 								const destRsrc = pathResourceFork(dest);
 								const statRsrc = await fsLstat(destRsrc);
-								expect(statRsrc.size).toBe(size);
+								expect(statRsrc.size).toBe(size, dest);
 							}
 						}
 
@@ -281,7 +282,8 @@ export function testArchive(
 								stat.mtime.getTime() - setMtime.getTime()
 							);
 							expect(timeDiff).toBeLessThanOrEqual(
-								mtimePrecisionMax
+								mtimePrecisionMax,
+								dest
 							);
 						}
 
@@ -296,7 +298,7 @@ export function testArchive(
 							)
 						) {
 							expect(modePermissionBits(stat.mode))
-								.toBe(modePermissionBits(mode));
+								.toBe(modePermissionBits(mode), dest);
 						}
 					}
 				});
