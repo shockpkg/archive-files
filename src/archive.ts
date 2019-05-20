@@ -58,6 +58,20 @@ export interface IExtractOptions {
 	replace?: boolean;
 
 	/**
+	 * Ignore permissions when extracting.
+	 *
+	 * @defaultValue false
+	 */
+	ignorePermissions?: boolean;
+
+	/**
+	 * Ignore file modification and access times when extracting.
+	 *
+	 * @defaultValue false
+	 */
+	ignoreTimes?: boolean;
+
+	/**
 	 * Extract resource fork as a file.
 	 *
 	 * @defaultValue false
@@ -338,6 +352,10 @@ export abstract class Entry extends Object {
 	) {
 		const pathSet = pathFull === null ? path : pathFull;
 
+		const ignorePermissions =
+			defaultValue(options.ignorePermissions, false);
+		const ignoreTimes = defaultValue(options.ignoreTimes, false);
+
 		// tslint:disable-next-line no-this-assignment
 		const {type, mode, atime, mtime} = this;
 
@@ -364,13 +382,13 @@ export abstract class Entry extends Object {
 		const atimeSet = atime || mtime || null;
 		const mtimeSet = mtime || atime || null;
 
-		if (mode !== null) {
+		if (!ignorePermissions && mode !== null) {
 			const chmod = link ? fsLchmod : fsChmod;
 			const modeSet = modePermissionBits(mode);
 			await chmod(pathSet, modeSet);
 		}
 
-		if (atimeSet && mtimeSet) {
+		if (!ignoreTimes && (atimeSet && mtimeSet)) {
 			const utimes = link ? fsLutimes : fsUtimes;
 			await utimes(pathSet, atimeSet, mtimeSet);
 		}
