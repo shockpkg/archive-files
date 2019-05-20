@@ -243,8 +243,10 @@ export function testArchive(
 						}
 
 						if (setMtime) {
-							expect(stat.mtime.toISOString())
-								.toBe(setMtime.toISOString());
+							const timeDiff = Math.abs(
+								stat.mtime.getTime() - setMtime.getTime()
+							);
+							expect(timeDiff).toBeLessThanOrEqual(2);
 						}
 
 						if (!platformIsWin && mode !== null) {
