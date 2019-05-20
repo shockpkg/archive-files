@@ -22,7 +22,9 @@ import {
 	PathType
 } from './types';
 import {
+	fsLchmodSupported,
 	fsLstat,
+	fsLutimesSupported,
 	modePermissionBits,
 	pathResourceFork,
 	zipPathIsMacResource
@@ -252,7 +254,13 @@ export function testArchive(
 							}
 						}
 
-						if (setMtime) {
+						if (
+							setMtime &&
+							(
+								fsLutimesSupported ||
+								type !== PathType.SYMLINK
+							)
+						) {
 							const timeDiff = Math.abs(
 								stat.mtime.getTime() - setMtime.getTime()
 							);
@@ -261,7 +269,16 @@ export function testArchive(
 							);
 						}
 
-						if (!platformIsWin && mode !== null) {
+						if (
+							(
+								!platformIsWin &&
+								mode !== null
+							) &&
+							(
+								fsLchmodSupported ||
+								type !== PathType.SYMLINK
+							)
+						) {
 							expect(modePermissionBits(stat.mode))
 								.toBe(modePermissionBits(mode));
 						}
