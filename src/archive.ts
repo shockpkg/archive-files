@@ -1,7 +1,8 @@
 import {
 	createWriteStream as fseCreateWriteStream,
 	ensureDir as fseEnsureDir,
-	remove as fseRemove
+	remove as fseRemove,
+	writeFile as fseWriteFile
 } from 'fs-extra';
 import {
 	dirname as pathDirname,
@@ -62,6 +63,13 @@ export interface IExtractOptions {
 	 * @defaultValue false
 	 */
 	resourceForkAsFile?: boolean;
+
+	/**
+	 * Extract symlink as a file.
+	 *
+	 * @defaultValue false
+	 */
+	symlinkAsFile?: boolean;
 }
 
 export interface IEntryInfo {
@@ -567,6 +575,7 @@ export abstract class Entry extends Object {
 		}
 
 		const replace = defaultValue(options.replace, false);
+		const symlinkAsFile = defaultValue(options.symlinkAsFile, false);
 
 		// Check if something exists at path, optionally removing.
 		const stat = await fsLstatExists(path);
@@ -586,8 +595,13 @@ export abstract class Entry extends Object {
 		// Read target.
 		const target = await readSymlink();
 
-		// Create link.
-		await fsSymlink(path, target);
+		// Create link, optionally as a file.
+		if (symlinkAsFile) {
+			await fseWriteFile(path, target);
+		}
+		else {
+			await fsSymlink(path, target);
+		}
 
 		// Set attributes.
 		await this.setAttributes(path, null, options);
