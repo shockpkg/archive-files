@@ -11,6 +11,8 @@ matrix:
 
     - os: windows
       node_js: 'v10.0.0'
+      env:
+        - ARCHIVE_FILES_DISABLE_MTIME_TESTING=1
 
     - os: linux
       node_js: 'v10.15.3'
@@ -21,6 +23,8 @@ matrix:
 
     - os: windows
       node_js: 'v10.15.3'
+      env:
+        - ARCHIVE_FILES_DISABLE_MTIME_TESTING=1
 
     - os: linux
       node_js: 'v12.2.0'
@@ -31,6 +35,8 @@ matrix:
 
     - os: windows
       node_js: 'v12.2.0'
+      env:
+        - ARCHIVE_FILES_DISABLE_MTIME_TESTING=1
 
 cache:
   directories:

@@ -30,6 +30,11 @@ import {
 	zipPathIsMacResource
 } from './util';
 
+// An option to disable mtime testing (for a CI that has issues).
+// For Travis on Windows, which randomly fails to have the correct mtime.
+export const disableMtimeTesting =
+	process.env.ARCHIVE_FILES_DISABLE_MTIME_TESTING === '1';
+
 export const specTmpPath = pathJoin('spec', 'tmp');
 export const specTmpArchivePath = pathJoin(specTmpPath, 'archive');
 export const specTmpExtractPath = pathJoin(specTmpPath, 'extract');
@@ -272,6 +277,7 @@ export function testArchive(
 						}
 
 						if (
+							!disableMtimeTesting &&
 							setMtime &&
 							(
 								fsLutimesSupported ||
