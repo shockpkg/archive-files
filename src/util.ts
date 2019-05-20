@@ -247,7 +247,19 @@ export async function streamToFile(
 	source: Readable,
 	destination: fse.WriteStream
 ) {
+	const ended = new Promise(resolve => {
+		source.on('end', () => {
+			resolve();
+		});
+	});
+	const closed = new Promise(resolve => {
+		destination.on('close', () => {
+			resolve();
+		});
+	});
 	await streamPipeline(source, destination);
+	await ended;
+	await closed;
 }
 
 /**
