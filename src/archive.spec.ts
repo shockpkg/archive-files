@@ -237,6 +237,17 @@ export function testArchive(
 
 					const entries: Entry[] = [];
 					await archive.read(async entry => {
+						if (entry.hasNamedVolume) {
+							expect(entry.volumeName)
+								.toBe(entry.path.split('/')[0]);
+							expect(entry.volumePath)
+								.toBe(entry.path.split('/').slice(1).join('/'));
+						}
+						else {
+							expect(entry.volumeName).toBe(null);
+							expect(entry.volumePath).toBe(entry.path);
+						}
+
 						expect(zipPathIsMacResource(entry.path))
 							.toBe(false, entry.path);
 

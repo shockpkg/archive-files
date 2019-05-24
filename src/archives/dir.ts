@@ -167,11 +167,6 @@ export class EntryDir extends Entry {
  */
 export class ArchiveDir extends Archive {
 	/**
-	 * Archive has named volumes that each entry will be under.
-	 */
-	public static readonly HAS_NAMED_VOLUMES: boolean = true;
-
-	/**
 	 * Entry constructor.
 	 */
 	public readonly Entry = EntryDir;

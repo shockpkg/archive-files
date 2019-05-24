@@ -299,6 +299,28 @@ export abstract class Entry extends Object {
 	}
 
 	/**
+	 * This entry volume name, or null.
+	 */
+	public get volumeName() {
+		if (this.hasNamedVolume) {
+			const path = this.path;
+			return path.substr(0, path.indexOf('/'));
+		}
+		return null;
+	}
+
+	/**
+	 * This entry path without any possible volume name.
+	 */
+	public get volumePath() {
+		const path = this.path;
+		if (this.hasNamedVolume) {
+			return path.substr(path.indexOf('/') + 1);
+		}
+		return path;
+	}
+
+	/**
 	 * Extract entry.
 	 *
 	 * @param path Extract path.
