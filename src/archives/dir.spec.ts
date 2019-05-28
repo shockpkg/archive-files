@@ -1,7 +1,12 @@
+import {
+	chmod as fseLchmod,
+	ensureDir as fseEnsureDir
+} from 'fs-extra';
 import {join as pathJoin} from 'path';
 
 import {
 	ArchiveTest,
+	platformIsWin,
 	safeToExtract,
 	specTmpArchivePath,
 	testArchive
@@ -23,6 +28,16 @@ describe('archives/dir', () => {
 					}
 					const dest = pathJoin(specTmpArchivePath, entry.path);
 					await entry.extract(dest);
+
+					if (platformIsWin) {
+						return;
+					}
+					const unreadable = pathJoin(
+						specTmpArchivePath,
+						'unreadable'
+					);
+					await fseEnsureDir(unreadable);
+					await fseLchmod(unreadable, 0);
 				});
 			}
 		);

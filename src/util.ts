@@ -10,6 +10,15 @@ import {
 	PathType
 } from './types';
 
+export interface IFsWalkOptions {
+	/**
+	 * Ignore unreadable directores when walking directory.
+	 *
+	 * @defaultValue false
+	 */
+	ignoreUnreadableDirectories?: boolean;
+}
+
 const fseLchmod = fse.lchmod as any as (typeof fse.chmod | undefined);
 const fseConstants = fse.constants;
 const O_WRONLY = fseConstants.O_WRONLY;
@@ -397,7 +406,8 @@ export async function fsWalk(
 	itter: (
 		path: string,
 		stat: fse.Stats
-	) => Promise<boolean | null | void>
+	) => Promise<boolean | null | void>,
+	options: IFsWalkOptions = {}
 ) {
 	const stack = (await fsReaddir(base)).reverse();
 	while (stack.length) {
@@ -415,7 +425,22 @@ export async function fsWalk(
 		}
 
 		// Recurse down.
-		const subs = await fsReaddir(fullPath);
+		let subs: string[] = [];
+		try {
+			subs = await fsReaddir(fullPath);
+		}
+		catch (err) {
+			if (
+				err &&
+				options.ignoreUnreadableDirectories &&
+				err.code === 'EACCES'
+			) {
+				// Skip it.
+			}
+			else {
+				throw err;
+			}
+		}
 		for (let i = subs.length; i--;) {
 			stack.push(pathJoin(entry, subs[i]));
 		}

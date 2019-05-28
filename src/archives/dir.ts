@@ -25,6 +25,10 @@ import {
 	statToPathType
 } from '../util';
 
+const walkOpts = {
+	ignoreUnreadableDirectories: true
+};
+
 export interface IEntryInfoDir extends IEntryInfo {
 	/**
 	 * Entry archive.
@@ -268,6 +272,6 @@ export class ArchiveDir extends Archive {
 			const pathFull = pathJoin(base, pathRel);
 			const ret = await each(pathFull, pathRel, stat);
 			return ret;
-		});
+		}, walkOpts);
 	}
 }

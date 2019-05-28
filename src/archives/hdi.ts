@@ -27,6 +27,10 @@ import {
 	statToPathType
 } from '../util';
 
+const walkOpts = {
+	ignoreUnreadableDirectories: true
+};
+
 export interface IEntryInfoHdi extends IEntryInfo {
 	/**
 	 * Entry archive.
@@ -299,7 +303,7 @@ export class ArchiveHdi extends Archive {
 					const pathRaw = pathJoin(volumeName, pathRel);
 					const ret = await each(pathFull, pathRaw, stat);
 					return ret;
-				});
+				}, walkOpts);
 			}
 		}
 		finally {
