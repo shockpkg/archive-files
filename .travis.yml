@@ -27,14 +27,14 @@ matrix:
         - ARCHIVE_FILES_DISABLE_MTIME_TESTING=1
 
     - os: linux
-      node_js: 'v12.2.0'
+      node_js: 'v12.3.1'
 
     - os: osx
       osx_image: xcode10.2
-      node_js: 'v12.2.0'
+      node_js: 'v12.3.1'
 
     - os: windows
-      node_js: 'v12.2.0'
+      node_js: 'v12.3.1'
       env:
         - ARCHIVE_FILES_DISABLE_MTIME_TESTING=1
 
