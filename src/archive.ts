@@ -250,7 +250,7 @@ export abstract class Entry extends Object {
 	 * Read symlink.
 	 */
 	@property(false)
-	protected readonly _readSymlink: (() => Promise<string | Buffer>) | null;
+	protected readonly _readSymlink: (() => Promise<Buffer>) | null;
 
 	/**
 	 * Entry triggering.
