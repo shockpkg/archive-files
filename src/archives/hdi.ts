@@ -284,10 +284,16 @@ export class ArchiveHdi extends Archive {
 			return true;
 		};
 
-		const {devices, eject} = await this.mounterMac.attach(this.path, {
-			nobrowse: this.nobrowse,
-			readonly: true
-		});
+		// Attach disk image, using automatic eject on shutdown (3rd arg).
+		// Just in case process shutdown without reaching finally.
+		const {devices, eject} = await this.mounterMac.attach(
+			this.path,
+			{
+				nobrowse: this.nobrowse,
+				readonly: true
+			},
+			{}
+		);
 
 		// Eject device when done.
 		try {
