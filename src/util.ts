@@ -217,7 +217,7 @@ export function zipPathIsMacResource(path: string) {
  */
 export async function streamToBuffer(
 	stream: Readable,
-	doneEvent: string = 'close'
+	doneEvent: string = 'end'
 ) {
 	const buffer = await new Promise<Buffer>((resolve, reject) => {
 		const datas: Buffer[] = [];
@@ -244,6 +244,87 @@ export async function streamToBuffer(
 		});
 	});
 	return buffer;
+}
+
+/**
+ * Awaits stream read end.
+ * The stream must be read from.
+ * Otherwise this promise will never complete, since the stream will not start.
+ *
+ * @param stream Stream object.
+ * @param doneEvent The stream done event.
+ */
+export async function streamReadEnd(
+	stream: Readable,
+	doneEvent: string = 'end'
+) {
+	await new Promise((resolve, reject) => {
+		let once = false;
+		const done = (err?: Error) => {
+			if (once) {
+				return;
+			}
+			once = true;
+			if (err) {
+				reject(err);
+				return;
+			}
+			resolve();
+		};
+		stream.on('error', err => {
+			done(err);
+		});
+		stream.on(doneEvent, () => {
+			done();
+		});
+	});
+}
+
+/**
+ * Create readable stream from another readable stream.
+ * Useful for converting an active stream into an pending stream.
+ *
+ * @param stream Readable-compatible stream.
+ * @return Readable stream.
+ */
+export function streamToReadable(stream: Readable) {
+	// Pause stream, resumed only when needed.
+	stream.pause();
+
+	// Create readable.
+	const r = new Readable({
+		read: () => {
+			stream.resume();
+		}
+	});
+
+	// Forward data and end.
+	stream.on('data', d => {
+		r.push(d);
+		stream.pause();
+	});
+	stream.on('end', () => {
+		r.push(null);
+	});
+
+	// Forward errors both ways.
+	const errorsA = new Set<any>();
+	const errorsB = new Set<any>();
+	stream.on('error', err => {
+		if (errorsA.has(err)) {
+			return;
+		}
+		errorsA.add(err);
+		r.emit('error', err);
+	});
+	r.on('error', err => {
+		if (errorsB.has(err)) {
+			return;
+		}
+		errorsB.add(err);
+		stream.emit('error', err);
+	});
+	return r;
 }
 
 /**

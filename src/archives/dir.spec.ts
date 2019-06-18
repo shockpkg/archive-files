@@ -18,7 +18,9 @@ describe('archives/dir', () => {
 	describe('ArchiveDir', () => {
 		testArchive(
 			ArchiveDir,
-			[specTmpArchivePath],
+			[
+				specTmpArchivePath
+			],
 			async () => {
 				// Extract test archive for dummy contents.
 				const archive = new ArchiveTest('dummy.file');

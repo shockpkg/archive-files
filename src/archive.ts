@@ -28,6 +28,7 @@ import {
 	modePermissionBits,
 	pathNormalize,
 	pathResourceFork,
+	streamReadEnd,
 	streamToFile
 } from './util';
 
@@ -318,6 +319,44 @@ export abstract class Entry extends Object {
 			return path.substr(path.indexOf('/') + 1);
 		}
 		return path;
+	}
+
+	/**
+	 * Read entry as stream, or null if nothing to read.
+	 * Consuming function will need to wait for stream to close.
+	 *
+	 * @return Readable stream.
+	 */
+	public async stream() {
+		if (!this._triggering) {
+			throw new Error('Archive entry is not active');
+		}
+		if (this._extracted) {
+			throw new Error('Archive entry can only be extracted once');
+		}
+		this._extracted = true;
+		return this._stream();
+	}
+
+	/**
+	 * Read entry as stream, or null if nothing to read.
+	 * Also includes a done promise to wait for read end.
+	 *
+	 * @return Info object.
+	 */
+	public async read() {
+		if (!this._triggering) {
+			throw new Error('Archive entry is not active');
+		}
+		if (this._extracted) {
+			throw new Error('Archive entry can only be extracted once');
+		}
+		this._extracted = true;
+		const stream = await this._stream();
+		return {
+			stream,
+			done: stream ? streamReadEnd(stream) : Promise.resolve()
+		};
 	}
 
 	/**
@@ -645,6 +684,89 @@ export abstract class Entry extends Object {
 
 		// Set attributes.
 		await this.setAttributes(path, null, options);
+	}
+
+	/**
+	 * Read as stream.
+	 *
+	 * @return Readable stream.
+	 */
+	protected async _stream() {
+		switch (this.type) {
+			case PathType.FILE: {
+				return this._streamFile();
+			}
+			case PathType.RESOURCE_FORK: {
+				return this._streamResourceFork();
+			}
+			case PathType.DIRECTORY: {
+				return this._streamDirectory();
+			}
+			case PathType.SYMLINK: {
+				return this._streamSymlink();
+			}
+			default: {
+				throw errorUnsupportedPathType(this.type);
+			}
+		}
+	}
+
+	/**
+	 * Read file as stream.
+	 *
+	 * @return Readable stream.
+	 */
+	protected async _streamFile() {
+		const readData = this._readData;
+		if (!readData) {
+			throw errorInternal();
+		}
+		return readData();
+	}
+
+	/**
+	 * Read resource fork as stream.
+	 *
+	 * @return Readable stream.
+	 */
+	protected async _streamResourceFork() {
+		const readRsrc = this._readRsrc;
+		if (!readRsrc) {
+			throw errorInternal();
+		}
+		return readRsrc();
+	}
+
+	/**
+	 * Read directory null stream.
+	 *
+	 * @return Null stream.
+	 */
+	protected async _streamDirectory() {
+		return null;
+	}
+
+	/**
+	 * Read symlink as stream.
+	 *
+	 * @return Readable stream.
+	 */
+	protected async _streamSymlink() {
+		const readSymlink = this._readSymlink;
+		if (!readSymlink) {
+			throw errorInternal();
+		}
+		const r = new Readable({
+			read: () => {
+				readSymlink().then(d => {
+					r.push(d);
+					r.push(null);
+				}, err => {
+					r.emit('error', err);
+				});
+			}
+		});
+		return r;
 	}
 }
 

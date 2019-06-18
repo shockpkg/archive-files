@@ -9,7 +9,6 @@ import {
 } from 'os';
 import {join as pathJoin} from 'path';
 import {
-	Duplex,
 	Readable
 } from 'stream';
 
@@ -27,6 +26,7 @@ import {
 	fsLutimesSupported,
 	modePermissionBits,
 	pathResourceFork,
+	streamToBuffer,
 	zipPathIsMacResource
 } from './util';
 
@@ -70,10 +70,13 @@ export function safeToExtract(entry: Entry) {
 }
 
 function bufferToStream(buffer: Buffer) {
-	const stream = new Duplex();
-	stream.push(buffer);
-	stream.push(null);
-	return stream as Readable;
+	const stream = new Readable({
+		read: () => {
+			stream.push(buffer);
+			stream.push(null);
+		}
+	});
+	return stream;
 }
 
 const testEntries = [
@@ -232,6 +235,56 @@ export function testArchive(
 	for (const path of paths) {
 		describe(path, () => {
 			describe('read', () => {
+				it('stream', async () => {
+					const archive = new ArchiveConstructor(path);
+
+					await archive.read(async entry => {
+						const {type, size} = entry;
+						const stream = await entry.stream();
+
+						const buffer = stream ?
+							await streamToBuffer(stream) :
+							null;
+
+						if (buffer) {
+							expect(type).not.toBe(PathType.DIRECTORY);
+
+							if (size !== null) {
+								expect(buffer.length).toBe(size);
+							}
+							return;
+						}
+
+						expect(type).toBe(PathType.DIRECTORY);
+					});
+				});
+
+				it('read', async () => {
+					const archive = new ArchiveConstructor(path);
+
+					await archive.read(async entry => {
+						const {type, size} = entry;
+						const {stream, done} = await entry.read();
+
+						const buffer = stream ?
+							await streamToBuffer(stream) :
+							null;
+
+						if (buffer) {
+							expect(type).not.toBe(PathType.DIRECTORY);
+
+							if (size !== null) {
+								expect(buffer.length).toBe(size);
+							}
+						}
+						else {
+							expect(type).toBe(PathType.DIRECTORY);
+						}
+
+						await done;
+					});
+				});
+
 				it('extract', async () => {
 					const archive = new ArchiveConstructor(path);
 
@@ -340,7 +393,9 @@ describe('archive', () => {
 	describe('Archive', () => {
 		testArchive(
 			ArchiveTest,
-			['dummy.file']
+			[
+				'dummy.file'
+			]
 		);
 	});
 });

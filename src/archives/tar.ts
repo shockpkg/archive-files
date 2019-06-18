@@ -2,7 +2,7 @@ import {
 	createReadStream as fseCreateReadStream
 } from 'fs-extra';
 import {
-	PassThrough,
+	Readable,
 	Transform
 } from 'stream';
 import {
@@ -22,7 +22,8 @@ import {
 import {
 	defaultNull,
 	errorInternal,
-	streamPipeline
+	streamPipeline,
+	streamToReadable
 } from '../util';
 
 export interface IEntryInfoTar extends IEntryInfo {
@@ -212,7 +213,7 @@ export class ArchiveTar extends Archive {
 
 		const each = async (
 			header: TarHeaders,
-			stream: () => PassThrough
+			stream: () => Readable
 		) => {
 			// Check type, skip unsupported.
 			let type: PathType;
@@ -287,13 +288,11 @@ export class ArchiveTar extends Archive {
 
 		const extract = tarExtract();
 		extract.on('entry', async (
-			header: TarHeaders,
-			stream: PassThrough,
-			next: () => void
+			header,
+			stream,
+			next
 		) => {
-			// Pause the streams until they are needed again.
-			reader.pause();
-			stream.pause();
+			const r = streamToReadable(stream);
 
 			// Function to forward a single error to fail extract pipeline.
 			let extractErrored = false;
@@ -305,17 +304,15 @@ export class ArchiveTar extends Archive {
 			};
 
 			// On any errors, fail the pipeline.
-			stream.on('error', extractError);
+			r.on('error', extractError);
 
 			// Once this entry ends, continue on to the next one.
-			stream.on('end', next);
+			r.on('end', next);
 
 			let continued = false;
 			const read = () => {
 				continued = true;
-				reader.resume();
-				stream.resume();
-				return stream;
+				return r;
 			};
 
 			// Handle entry, on any errors fail the pipeline.
@@ -330,8 +327,8 @@ export class ArchiveTar extends Archive {
 
 			// If cancel, pause streams and throw cancel error.
 			if (cancel) {
+				r.pause();
 				reader.pause();
-				stream.pause();
 				cancelError = new Error();
 				extractError(cancelError);
 				return;
@@ -339,8 +336,7 @@ export class ArchiveTar extends Archive {
 
 			// If this entry was not read by the handler, continue over it.
 			if (!continued) {
-				reader.resume();
-				stream.resume();
+				r.resume();
 			}
 		});
 
