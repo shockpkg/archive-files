@@ -3,6 +3,8 @@ all: test-archive-zip.zip \
 	test-archive-ditto.zip \
 	test-archive-gtar.tar \
 	test-archive-gtar.tar.gz \
+	test-archive-gtar.tar.bz2 \
+	test-archive-gtar.tar.xz \
 	test-archive-hybrid.iso \
 	test-archive-hfsp.dmg \
 	test-archive-hfsp-j.dmg \
@@ -52,6 +54,12 @@ test-archive-gtar.tar: test-archive
 
 test-archive-gtar.tar.gz: test-archive
 	cd 'test-archive'; gtar -cz -f '../test-archive-gtar.tar.gz' --owner=0 --group=0 *
+
+test-archive-gtar.tar.bz2: test-archive
+	cd 'test-archive'; gtar -cj -f '../test-archive-gtar.tar.bz2' --owner=0 --group=0 *
+
+test-archive-gtar.tar.xz: test-archive
+	cd 'test-archive'; gtar -cj -f '../test-archive-gtar.tar.xz' --owner=0 --group=0 *
 
 test-archive-hybrid.iso: test-archive
 	hdiutil makehybrid \
