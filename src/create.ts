@@ -2,6 +2,7 @@ import {Archive} from './archive';
 import {ArchiveDir} from './archives/dir';
 import {ArchiveHdi} from './archives/hdi';
 import {ArchiveTar} from './archives/tar';
+import {ArchiveTarBz2} from './archives/tars/bz2';
 import {ArchiveTarGz} from './archives/tars/gz';
 import {ArchiveZip} from './archives/zip';
 
@@ -9,6 +10,7 @@ const archives: (typeof Archive)[] = [
 	ArchiveDir,
 	ArchiveHdi,
 	ArchiveTar,
+	ArchiveTarBz2,
 	ArchiveTarGz,
 	ArchiveZip
 ];
