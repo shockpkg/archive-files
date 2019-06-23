@@ -171,6 +171,12 @@ export class EntryDir extends Entry {
  */
 export class ArchiveDir extends Archive {
 	/**
+	 * List of file extensions, or null.
+	 * All subclasses should implement this property.
+	 */
+	public static FILE_EXTENSIONS: string[] | null = null;
+
+	/**
 	 * Entry constructor.
 	 */
 	public readonly Entry = EntryDir;

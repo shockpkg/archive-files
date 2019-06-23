@@ -40,6 +40,15 @@ export class EntryTarGz extends EntryTar {
  */
 export class ArchiveTarGz extends ArchiveTar {
 	/**
+	 * List of file extensions, or null.
+	 * All subclasses should implement this property.
+	 */
+	public static FILE_EXTENSIONS: string[] | null = [
+		'.tar.gz',
+		'.tgz'
+	];
+
+	/**
 	 * Entry constructor.
 	 */
 	public readonly Entry = EntryTarGz;

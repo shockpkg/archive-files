@@ -777,6 +777,12 @@ export abstract class Entry extends Object {
  */
 export abstract class Archive extends Object {
 	/**
+	 * List of file extensions, or null.
+	 * All subclasses should implement this property.
+	 */
+	public static FILE_EXTENSIONS: string[] | null = null;
+
+	/**
 	 * Archive has named volumes that each entry will be under.
 	 */
 	public static readonly HAS_NAMED_VOLUMES: boolean = false;
@@ -808,6 +814,13 @@ export abstract class Archive extends Object {
 		super();
 
 		this.path = path;
+	}
+
+	/**
+	 * List of file extensions used by this format.
+	 */
+	public get fileExtensions() {
+		return (this.constructor as typeof Archive).FILE_EXTENSIONS || null;
 	}
 
 	/**

@@ -182,6 +182,14 @@ export class EntryTar extends Entry {
  */
 export class ArchiveTar extends Archive {
 	/**
+	 * List of file extensions, or null.
+	 * All subclasses should implement this property.
+	 */
+	public static FILE_EXTENSIONS: string[] | null = [
+		'.tar'
+	];
+
+	/**
 	 * Entry constructor.
 	 */
 	public readonly Entry = EntryTar;

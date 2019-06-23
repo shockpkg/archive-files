@@ -173,6 +173,16 @@ export class EntryHdi extends Entry {
  */
 export class ArchiveHdi extends Archive {
 	/**
+	 * List of file extensions, or null.
+	 * All subclasses should implement this property.
+	 */
+	public static FILE_EXTENSIONS: string[] | null = [
+		'.dmg',
+		'.iso',
+		'.cdr'
+	];
+
+	/**
 	 * Archive has named volumes that each entry will be under.
 	 */
 	public static readonly HAS_NAMED_VOLUMES: boolean = true;
