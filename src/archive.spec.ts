@@ -285,6 +285,26 @@ export function testArchive(
 					});
 				});
 
+				it('readBuffer', async () => {
+					const archive = new ArchiveConstructor(path);
+
+					await archive.read(async entry => {
+						const {type, size} = entry;
+						const buffer = await entry.readBuffer();
+
+						if (buffer) {
+							expect(type).not.toBe(PathType.DIRECTORY);
+
+							if (size !== null) {
+								expect(buffer.length).toBe(size);
+							}
+							return;
+						}
+
+						expect(type).toBe(PathType.DIRECTORY);
+					});
+				});
+
 				it('extract', async () => {
 					const archive = new ArchiveConstructor(path);
 

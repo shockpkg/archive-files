@@ -29,6 +29,7 @@ import {
 	pathNormalize,
 	pathResourceFork,
 	streamReadEnd,
+	streamToBuffer,
 	streamToFile
 } from './util';
 
@@ -325,16 +326,10 @@ export abstract class Entry extends Object {
 	 * Read entry as stream, or null if nothing to read.
 	 * Consuming function will need to wait for stream to close.
 	 *
-	 * @return Readable stream.
+	 * @return Readable stream or null if nothing to read.
 	 */
 	public async stream() {
-		if (!this._triggering) {
-			throw new Error('Archive entry is not active');
-		}
-		if (this._extracted) {
-			throw new Error('Archive entry can only be extracted once');
-		}
-		this._extracted = true;
+		this._beginExtract();
 		return this._stream();
 	}
 
@@ -345,18 +340,23 @@ export abstract class Entry extends Object {
 	 * @return Info object.
 	 */
 	public async read() {
-		if (!this._triggering) {
-			throw new Error('Archive entry is not active');
-		}
-		if (this._extracted) {
-			throw new Error('Archive entry can only be extracted once');
-		}
-		this._extracted = true;
+		this._beginExtract();
 		const stream = await this._stream();
 		return {
 			stream,
 			done: stream ? streamReadEnd(stream) : Promise.resolve()
 		};
+	}
+
+	/**
+	 * Read entire entry into a Buffer.
+	 *
+	 * @return Buffer or null if nothing to be read.
+	 */
+	public async readBuffer() {
+		this._beginExtract();
+		const stream = await this._stream();
+		return stream ? streamToBuffer(stream) : null;
 	}
 
 	/**
@@ -366,13 +366,7 @@ export abstract class Entry extends Object {
 	 * @param options Extract options.
 	 */
 	public async extract(path: string, options: IExtractOptions = {}) {
-		if (!this._triggering) {
-			throw new Error('Archive entry is not active');
-		}
-		if (this._extracted) {
-			throw new Error('Archive entry can only be extracted once');
-		}
-		this._extracted = true;
+		this._beginExtract();
 		await this._extract(path, options);
 	}
 
@@ -453,6 +447,20 @@ export abstract class Entry extends Object {
 			const utimes = link ? fsLutimes : fsUtimes;
 			await utimes(pathSet, atimeSet, mtimeSet);
 		}
+	}
+
+	/**
+	 * Method to call before begining extraction.
+	 * Throws error if extraction already started or entry not active.
+	 */
+	protected _beginExtract() {
+		if (!this._triggering) {
+			throw new Error('Archive entry is not active');
+		}
+		if (this._extracted) {
+			throw new Error('Archive entry can only be extracted once');
+		}
+		this._extracted = true;
 	}
 
 	/**
