@@ -49,7 +49,7 @@ function archivesExtensions() {
 		for (const ext of exts) {
 			all.push({
 				Archive,
-				ext
+				ext: ext.toLowerCase()
 			});
 		}
 	}
@@ -66,9 +66,10 @@ function archivesExtensions() {
  * @return Archive instance or null.
  */
 export function createArchiveByFileExtension(path: string) {
+	const pathLower = path.toLowerCase();
 	const list = archivesExtensions();
 	for (const {Archive, ext} of list) {
-		if (path.endsWith(ext)) {
+		if (pathLower.endsWith(ext)) {
 			return new (Archive as any)(path) as Archive;
 		}
 	}
