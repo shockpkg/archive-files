@@ -1,11 +1,9 @@
+/* eslint-disable max-classes-per-file */
+
 import {Readable} from 'stream';
 import {promisify} from 'util';
-import {
-	Entry as YauzlEntry,
-	open as yauzlOpen,
-	Options as YauzlOptions,
-	ZipFile as YauzlZipFile
-} from 'yauzl';
+
+import yauzl from 'yauzl';
 
 import {
 	Archive,
@@ -20,17 +18,17 @@ import {
 	streamToBuffer,
 	zipEfaToUnixMode,
 	zipPathIsMacResource,
-	zipPathTypeFromEfaAndPath,
+	zipPathTypeFromEfaAndPath
 } from '../util';
 
-const yauzlOpenP = promisify(yauzlOpen) as any as (
+const yauzlOpenP = promisify(yauzl.open) as any as (
 	path: string,
-	options: YauzlOptions
-) => Promise<YauzlZipFile>;
+	options: yauzl.Options
+) => Promise<yauzl.ZipFile>;
 
 const yauzlEntryReadP = async (
-	zipfile: YauzlZipFile,
-	entry: YauzlEntry
+	zipfile: yauzl.ZipFile,
+	entry: yauzl.Entry
 ) => {
 	const openP = promisify(zipfile.openReadStream.bind(zipfile));
 	const r = await openP(entry);
@@ -38,8 +36,8 @@ const yauzlEntryReadP = async (
 };
 
 const yauzlEntryReadSymlinkP = async (
-	zipfile: YauzlZipFile,
-	entry: YauzlEntry
+	zipfile: yauzl.ZipFile,
+	entry: yauzl.Entry
 ) => {
 	const stream = await yauzlEntryReadP(zipfile, entry);
 	const buffer = await streamToBuffer(stream, 'end');
@@ -47,6 +45,7 @@ const yauzlEntryReadSymlinkP = async (
 };
 
 export interface IZipEntryExtraField {
+
 	/**
 	 * Field ID.
 	 */
@@ -59,6 +58,7 @@ export interface IZipEntryExtraField {
 }
 
 export interface IEntryInfoZip extends IEntryInfo {
+
 	/**
 	 * Entry archive.
 	 */
@@ -319,8 +319,8 @@ export class ArchiveZip extends Archive {
 	/**
 	 * Get stat mode value from ZIP file external file attributes.
 	 *
-	 * @param attrs Attributes value.
-	 * @return Stat mode or null.
+	 * @param value Attributes value.
+	 * @returns Stat mode or null.
 	 */
 	public zipEfaToUnixMode(value: number) {
 		return zipEfaToUnixMode(value);
@@ -331,7 +331,7 @@ export class ArchiveZip extends Archive {
 	 *
 	 * @param mode Entry mode.
 	 * @param path Entry path.
-	 * @return Path type.
+	 * @returns Path type.
 	 */
 	public zipPathTypeFromEfaAndPath(mode: number, path: string) {
 		return zipPathTypeFromEfaAndPath(mode, path);
@@ -341,7 +341,7 @@ export class ArchiveZip extends Archive {
 	 * Check if path is a Mac resource fork related path.
 	 *
 	 * @param path Zip path.
-	 * @return Boolean value.
+	 * @returns Boolean value.
 	 */
 	public zipPathIsMacResource(path: string) {
 		return zipPathIsMacResource(path);
@@ -368,7 +368,7 @@ export class ArchiveZip extends Archive {
 	) {
 		const zipfile = await yauzlOpenP(this.path, {lazyEntries: true});
 
-		const each = async (yentry: YauzlEntry) => {
+		const each = async (yentry: yauzl.Entry) => {
 			const {
 				comment,
 				compressedSize,
@@ -433,7 +433,7 @@ export class ArchiveZip extends Archive {
 				readSymlink
 			});
 			const ret = await entry.trigger(itter);
-			return ret === false ? true : false;
+			return ret === false;
 		};
 
 		await new Promise((resolve, reject) => {
@@ -447,7 +447,7 @@ export class ArchiveZip extends Archive {
 				zipfile.readEntry();
 			};
 			zipfile.on('error', next);
-			zipfile.on('entry', async (entry: YauzlEntry) => {
+			zipfile.on('entry', async (entry: yauzl.Entry) => {
 				let done = false;
 				try {
 					done = await each(entry);
@@ -462,6 +462,7 @@ export class ArchiveZip extends Archive {
 				}
 				else {
 					next(null);
+					return;
 				}
 			});
 			zipfile.on('close', () => {

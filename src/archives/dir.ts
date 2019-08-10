@@ -1,12 +1,13 @@
+/* eslint-disable max-classes-per-file */
+
 import {
 	Stats
 } from 'fs';
 import {
-	createReadStream as fseCreateReadStream
-} from 'fs-extra';
-import {
 	join as pathJoin
 } from 'path';
+
+import fse from 'fs-extra';
 
 import {
 	Archive,
@@ -30,6 +31,7 @@ const walkOpts = {
 };
 
 export interface IEntryInfoDir extends IEntryInfo {
+
 	/**
 	 * Entry archive.
 	 */
@@ -151,6 +153,8 @@ export class EntryDir extends Entry {
 
 	/**
 	 * Get the path of resource psuedo-file, raw.
+	 *
+	 * @returns Path string.
 	 */
 	public get rsrcPathRaw() {
 		return pathResourceFork(this.pathRaw);
@@ -158,6 +162,8 @@ export class EntryDir extends Entry {
 
 	/**
 	 * Get the path of resource psuedo-file, normalized.
+	 *
+	 * @returns Path string.
 	 */
 	public get rsrcPath() {
 		return pathNormalize(pathResourceFork(this.path));
@@ -216,7 +222,7 @@ export class ArchiveDir extends Archive {
 			const {size, mode, uid, gid, atime, mtime} = stat;
 
 			const readData = type === PathType.FILE ?
-				async () => fseCreateReadStream(pathFull) : null;
+				async () => fse.createReadStream(pathFull) : null;
 
 			const readSymlink = type === PathType.SYMLINK ?
 				async () => fsReadlinkRaw(pathFull) : null;
@@ -248,7 +254,7 @@ export class ArchiveDir extends Archive {
 					const sizeRsrc = rsrcStat.size;
 
 					const readRsrc =
-						async () => fseCreateReadStream(rsrcPathFull);
+						async () => fse.createReadStream(rsrcPathFull);
 
 					const entryRsrc = new this.Entry({
 						archive: this,

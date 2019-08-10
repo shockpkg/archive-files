@@ -1,4 +1,7 @@
+/* eslint-disable max-classes-per-file */
+
 import {Transform} from 'stream';
+
 // @ts-ignore
 import unbzip2Stream from 'unbzip2-stream';
 
@@ -9,6 +12,7 @@ import {
 } from '../tar';
 
 export interface IEntryInfoTarBz2 extends IEntryInfoTar {
+
 	/**
 	 * Entry archive.
 	 */
@@ -82,7 +86,7 @@ export class ArchiveTarBz2 extends ArchiveTar {
 	/**
 	 * Get decompression transform streams.
 	 *
-	 * @return List of decompression transforms.
+	 * @returns List of decompression transforms.
 	 */
 	protected _decompressionTransforms() {
 		const stream = unbzip2Stream() as Transform;

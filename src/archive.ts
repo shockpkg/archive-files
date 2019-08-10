@@ -1,14 +1,12 @@
-import {
-	createWriteStream as fseCreateWriteStream,
-	ensureDir as fseEnsureDir,
-	remove as fseRemove,
-	writeFile as fseWriteFile
-} from 'fs-extra';
+/* eslint-disable max-classes-per-file */
+
 import {
 	dirname as pathDirname,
 	resolve as pathResolve
 } from 'path';
 import {Readable} from 'stream';
+
+import fse from 'fs-extra';
 
 import {property} from './decorators';
 import {
@@ -34,6 +32,7 @@ import {
 } from './util';
 
 export interface IArchiveAfterReadSetAttributesEntry {
+
 	/**
 	 * Extract path, relative.
 	 */
@@ -51,44 +50,46 @@ export interface IArchiveAfterReadSetAttributesEntry {
 }
 
 export interface IExtractOptions {
+
 	/**
 	 * Replace whatever may be at the path.
 	 * A directory will not replace another directory.
 	 *
-	 * @defaultValue false
+	 * @default false
 	 */
 	replace?: boolean;
 
 	/**
 	 * Ignore permissions when extracting.
 	 *
-	 * @defaultValue false
+	 * @default false
 	 */
 	ignorePermissions?: boolean;
 
 	/**
 	 * Ignore file modification and access times when extracting.
 	 *
-	 * @defaultValue false
+	 * @default false
 	 */
 	ignoreTimes?: boolean;
 
 	/**
 	 * Extract resource fork as a file.
 	 *
-	 * @defaultValue false
+	 * @default false
 	 */
 	resourceForkAsFile?: boolean;
 
 	/**
 	 * Extract symlink as a file.
 	 *
-	 * @defaultValue false
+	 * @default false
 	 */
 	symlinkAsFile?: boolean;
 }
 
 export interface IEntryInfo {
+
 	/**
 	 * Entry archive.
 	 */
@@ -295,6 +296,8 @@ export abstract class Entry extends Object {
 
 	/**
 	 * This entry path includes named volume.
+	 *
+	 * @returns Entry has volume name in path.
 	 */
 	public get hasNamedVolume() {
 		return this.archive.hasNamedVolumes;
@@ -302,10 +305,12 @@ export abstract class Entry extends Object {
 
 	/**
 	 * This entry volume name, or null.
+	 *
+	 * @returns Entry path volume name.
 	 */
 	public get volumeName() {
 		if (this.hasNamedVolume) {
-			const path = this.path;
+			const {path} = this;
 			return path.substr(0, path.indexOf('/'));
 		}
 		return null;
@@ -313,9 +318,11 @@ export abstract class Entry extends Object {
 
 	/**
 	 * This entry path without any possible volume name.
+	 *
+	 * @returns Entry path without the volume name.
 	 */
 	public get volumePath() {
-		const path = this.path;
+		const {path} = this;
 		if (this.hasNamedVolume) {
 			return path.substr(path.indexOf('/') + 1);
 		}
@@ -326,7 +333,7 @@ export abstract class Entry extends Object {
 	 * Read entry as stream, or null if nothing to read.
 	 * Consuming function will need to wait for stream to close.
 	 *
-	 * @return Readable stream or null if nothing to read.
+	 * @returns Readable stream or null if nothing to read.
 	 */
 	public async stream() {
 		this._beginExtract();
@@ -337,7 +344,7 @@ export abstract class Entry extends Object {
 	 * Read entry as stream, or null if nothing to read.
 	 * Also includes a done promise to wait for read end.
 	 *
-	 * @return Info object.
+	 * @returns Info object.
 	 */
 	public async read() {
 		this._beginExtract();
@@ -351,7 +358,7 @@ export abstract class Entry extends Object {
 	/**
 	 * Read entire entry into a Buffer.
 	 *
-	 * @return Buffer or null if nothing to be read.
+	 * @returns Buffer or null if nothing to be read.
 	 */
 	public async readBuffer() {
 		this._beginExtract();
@@ -374,9 +381,10 @@ export abstract class Entry extends Object {
 	 * Trigger on itterator function.
 	 *
 	 * @param itter Itterator function.
-	 * @return Return value.
+	 * @returns Return value.
 	 */
 	public async trigger<
+		// eslint-disable-next-line space-before-function-paren
 		T, U extends ((entry: this) => Promise<T>)
 	>(itter: U) {
 		let r: T;
@@ -411,7 +419,6 @@ export abstract class Entry extends Object {
 			defaultValue(options.ignorePermissions, false);
 		const ignoreTimes = defaultValue(options.ignoreTimes, false);
 
-		// tslint:disable-next-line no-this-assignment
 		const {type, mode, atime, mtime} = this;
 
 		let link = false;
@@ -467,7 +474,7 @@ export abstract class Entry extends Object {
 	 * Create an extract error for path that exists.
 	 *
 	 * @param path Extract path.
-	 * @return Error object.
+	 * @returns Error object.
 	 */
 	protected _errorExtractPathExists(path: string) {
 		return new Error(`Extract path already exists: ${path}`);
@@ -477,7 +484,7 @@ export abstract class Entry extends Object {
 	 * Create an extract error for a resource fork not going to a file.
 	 *
 	 * @param path Extract path.
-	 * @return Error object.
+	 * @returns Error object.
 	 */
 	protected _errorNoResourceFork(path: string) {
 		return new Error(`Extract path for resource fork not a file: ${path}`);
@@ -534,7 +541,7 @@ export abstract class Entry extends Object {
 		if (stat) {
 			// If replacing, then remove, else throw.
 			if (replace) {
-				await fseRemove(path);
+				await fse.remove(path);
 			}
 			else {
 				throw this._errorExtractPathExists(path);
@@ -542,12 +549,12 @@ export abstract class Entry extends Object {
 		}
 
 		// Ensure base directory exists.
-		await fseEnsureDir(pathDirname(path));
+		await fse.ensureDir(pathDirname(path));
 
 		// Write file.
 		await streamToFile(
 			await reader(),
-			fseCreateWriteStream(path, {flags: 'wx'})
+			fse.createWriteStream(path, {flags: 'wx'})
 		);
 
 		// Set attributes.
@@ -605,7 +612,7 @@ export abstract class Entry extends Object {
 		// Write the resource fork.
 		await streamToFile(
 			await readRsrc(),
-			fseCreateWriteStream(pathRsrc, {flags: 'w'})
+			fse.createWriteStream(pathRsrc, {flags: 'w'})
 		);
 
 		// Set attributes.
@@ -630,8 +637,8 @@ export abstract class Entry extends Object {
 			// If not directory, then remove and replace it, else throw.
 			if (!stat.isDirectory()) {
 				if (replace) {
-					await fseRemove(path);
-					await fseEnsureDir(path);
+					await fse.remove(path);
+					await fse.ensureDir(path);
 				}
 				else {
 					throw this._errorExtractPathExists(path);
@@ -639,7 +646,7 @@ export abstract class Entry extends Object {
 			}
 		}
 		else {
-			await fseEnsureDir(path);
+			await fse.ensureDir(path);
 		}
 
 		// Set directory attributes after any children are added.
@@ -669,7 +676,7 @@ export abstract class Entry extends Object {
 		if (stat) {
 			// If replacing, then remove, else throw.
 			if (replace) {
-				await fseRemove(path);
+				await fse.remove(path);
 			}
 			else {
 				throw this._errorExtractPathExists(path);
@@ -677,14 +684,14 @@ export abstract class Entry extends Object {
 		}
 
 		// Ensure base directory exists.
-		await fseEnsureDir(pathDirname(path));
+		await fse.ensureDir(pathDirname(path));
 
 		// Read target.
 		const target = await readSymlink();
 
 		// Create link, optionally as a file.
 		if (symlinkAsFile) {
-			await fseWriteFile(path, target);
+			await fse.writeFile(path, target);
 		}
 		else {
 			await fsSymlink(path, target);
@@ -697,7 +704,7 @@ export abstract class Entry extends Object {
 	/**
 	 * Read as stream.
 	 *
-	 * @return Readable stream.
+	 * @returns Readable stream.
 	 */
 	protected async _stream() {
 		switch (this.type) {
@@ -722,7 +729,7 @@ export abstract class Entry extends Object {
 	/**
 	 * Read file as stream.
 	 *
-	 * @return Readable stream.
+	 * @returns Readable stream.
 	 */
 	protected async _streamFile() {
 		const readData = this._readData;
@@ -735,7 +742,7 @@ export abstract class Entry extends Object {
 	/**
 	 * Read resource fork as stream.
 	 *
-	 * @return Readable stream.
+	 * @returns Readable stream.
 	 */
 	protected async _streamResourceFork() {
 		const readRsrc = this._readRsrc;
@@ -748,7 +755,7 @@ export abstract class Entry extends Object {
 	/**
 	 * Read directory null stream.
 	 *
-	 * @return Null stream.
+	 * @returns Null stream.
 	 */
 	protected async _streamDirectory() {
 		return null;
@@ -757,7 +764,7 @@ export abstract class Entry extends Object {
 	/**
 	 * Read symlink as stream.
 	 *
-	 * @return Readable stream.
+	 * @returns Readable stream.
 	 */
 	protected async _streamSymlink() {
 		const readSymlink = this._readSymlink;
@@ -815,8 +822,9 @@ export abstract class Archive extends Object {
 	 * Map of entries to set attributes on after reading.
 	 */
 	@property(false)
-	protected _afterReadSetAttributes:
-		Map<string, IArchiveAfterReadSetAttributesEntry> | null = null;
+	protected _afterReadSetAttributes: (
+		Map<string, IArchiveAfterReadSetAttributesEntry> | null
+	) = null;
 
 	constructor(path: string) {
 		super();
@@ -826,6 +834,8 @@ export abstract class Archive extends Object {
 
 	/**
 	 * List of file extensions used by this format.
+	 *
+	 * @returns List of file extensions.
 	 */
 	public get fileExtensions() {
 		return (this.constructor as typeof Archive).FILE_EXTENSIONS || null;
@@ -833,6 +843,8 @@ export abstract class Archive extends Object {
 
 	/**
 	 * Archive has named volumes that each entry will be under.
+	 *
+	 * @returns Archive has named volumns.
 	 */
 	public get hasNamedVolumes() {
 		return (this.constructor as typeof Archive).HAS_NAMED_VOLUMES;
@@ -926,6 +938,7 @@ export abstract class Archive extends Object {
 				throw errorInternal();
 			}
 			const {entry, path, options} = ent;
+			// eslint-disable-next-line no-await-in-loop
 			await entry.setAttributes(path, resolved, options);
 		}
 	}

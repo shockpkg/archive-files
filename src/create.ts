@@ -16,6 +16,7 @@ const archives: (typeof Archive)[] = [
 ];
 
 interface IArchiveExt {
+
 	/**
 	 * Archive constructor.
 	 */
@@ -32,7 +33,7 @@ let archivesExtensionsCache: IArchiveExt[] | null = null;
 /**
  * Get all archive and extension pairs, ordered longest to shortest.
  *
- * @return List of archive and extenion pairs.
+ * @returns List of archive and extenion pairs.
  */
 function archivesExtensions() {
 	if (archivesExtensionsCache) {
@@ -63,7 +64,7 @@ function archivesExtensions() {
  * Create an Archive instance for a given path, based on file extension.
  *
  * @param path File path.
- * @return Archive instance or null.
+ * @returns Archive instance or null.
  */
 export function createArchiveByFileExtension(path: string) {
 	const pathLower = path.toLowerCase();

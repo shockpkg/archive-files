@@ -1,3 +1,5 @@
+/* eslint-disable max-classes-per-file */
+
 import {
 	createGunzip
 } from 'zlib';
@@ -9,6 +11,7 @@ import {
 } from '../tar';
 
 export interface IEntryInfoTarGz extends IEntryInfoTar {
+
 	/**
 	 * Entry archive.
 	 */
@@ -82,7 +85,7 @@ export class ArchiveTarGz extends ArchiveTar {
 	/**
 	 * Get decompression transform streams.
 	 *
-	 * @return List of decompression transforms.
+	 * @returns List of decompression transforms.
 	 */
 	protected _decompressionTransforms() {
 		return [createGunzip()];

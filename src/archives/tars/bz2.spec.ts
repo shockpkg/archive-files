@@ -1,3 +1,5 @@
+/* eslint-env jasmine */
+
 import {join as pathJoin} from 'path';
 
 import {

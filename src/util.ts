@@ -1,4 +1,3 @@
-import fse from 'fs-extra';
 import {join as pathJoin} from 'path';
 import {
 	pipeline,
@@ -6,22 +5,25 @@ import {
 } from 'stream';
 import {promisify} from 'util';
 
+import fse from 'fs-extra';
+
 import {
 	PathType
 } from './types';
 
 export interface IFsWalkOptions {
+
 	/**
 	 * Ignore unreadable directores when walking directory.
 	 *
-	 * @defaultValue false
+	 * @default false
 	 */
 	ignoreUnreadableDirectories?: boolean;
 }
 
 const fseLchmod = fse.lchmod as any as (typeof fse.chmod | undefined);
 const fseConstants = fse.constants;
-const O_WRONLY = fseConstants.O_WRONLY;
+const {O_WRONLY} = fseConstants;
 const O_SYMLINK = defaultNull(fseConstants.O_SYMLINK);
 
 export const streamPipeline = promisify(pipeline);
@@ -31,12 +33,13 @@ export const streamPipeline = promisify(pipeline);
  *
  * @param value Value.
  * @param defaultValue Default value.
- * @return Value or the default value if undefined.
+ * @returns Value or the default value if undefined.
  */
 export function defaultValue<T, U>(
 	value: T,
 	defaultValue: U
 ): Exclude<T | U, undefined> {
+	// eslint-disable-next-line no-undefined
 	return value === undefined ? defaultValue : (value as any);
 }
 
@@ -44,7 +47,7 @@ export function defaultValue<T, U>(
  * Default null if value is undefined.
  *
  * @param value Value.
- * @return Value or null if undefined.
+ * @returns Value or null if undefined.
  */
 export function defaultNull<T>(value: T) {
 	return defaultValue(value, null);
@@ -53,16 +56,17 @@ export function defaultNull<T>(value: T) {
 /**
  * Create internal error obeject.
  *
- * @return Error object.
+ * @returns Error object.
  */
 export function errorInternal() {
 	return new Error('Internal error');
 }
 
 /**
- * Create unsupported path type error obeject.
+ * Create unsupported path type error object.
  *
- * @return Error object.
+ * @param type Path type.
+ * @returns Error object.
  */
 export function errorUnsupportedPathType(type: PathType) {
 	return new Error(`Unsupported path type: ${type}`);
@@ -72,17 +76,17 @@ export function errorUnsupportedPathType(type: PathType) {
  * Normalize an entry path.
  *
  * @param path Path string.
- * @return Normalized path.
+ * @returns Normalized path.
  */
 export function pathNormalize(path: string) {
-	return path.replace(/\\/g, '/').replace(/([^\/])\/+$/, '$1');
+	return path.replace(/\\/g, '/').replace(/([^/])\/+$/, '$1');
 }
 
 /**
  * Get path to the resource fork pseudo-file.
  *
  * @param path Path string.
- * @return Resource fork pseudo-file path.
+ * @returns Resource fork pseudo-file path.
  */
 export function pathResourceFork(path: string) {
 	return pathJoin(path, '..namedfork', 'rsrc');
@@ -92,7 +96,7 @@ export function pathResourceFork(path: string) {
  * Get path type from stat object, or null if unsupported.
  *
  * @param stat Stats object.
- * @return Path type.
+ * @returns Path type.
  */
 export function statToPathType(stat: fse.Stats) {
 	if (stat.isSymbolicLink()) {
@@ -113,7 +117,7 @@ export function statToPathType(stat: fse.Stats) {
  * Get path type from stat mode, or null if unsupported.
  *
  * @param mode Stat mode.
- * @return Path type.
+ * @returns Path type.
  */
 export function modeToPathType(mode: number) {
 	if (bitwiseAndEqual(mode, 0o0120000)) {
@@ -134,10 +138,10 @@ export function modeToPathType(mode: number) {
  * Get permission bits from mode value.
  *
  * @param mode Stat mode.
- * @return Permission bits.
+ * @returns Permission bits.
  */
 export function modePermissionBits(mode: number) {
-	// tslint:disable-next-line: no-bitwise
+	// eslint-disable-next-line no-bitwise
 	return (mode & 0b111111111);
 }
 
@@ -146,10 +150,10 @@ export function modePermissionBits(mode: number) {
  *
  * @param value Bits value.
  * @param mask Mask value.
- * @return True of all the bits set.
+ * @returns True of all the bits set.
  */
 export function bitwiseAndEqual(value: number, mask: number) {
-	// tslint:disable-next-line: no-bitwise
+	// eslint-disable-next-line no-bitwise
 	return (value & mask) === mask;
 }
 
@@ -157,10 +161,10 @@ export function bitwiseAndEqual(value: number, mask: number) {
  * Get Unix bits from the ZIP file external file attributes.
  *
  * @param attrs Attributes value.
- * @return Unix bits or null.
+ * @returns Unix bits or null.
  */
 export function zipEfaToUnix(attrs: number) {
-	// tslint:disable-next-line: no-bitwise
+	// eslint-disable-next-line no-bitwise
 	return attrs >>> 16;
 }
 
@@ -168,13 +172,13 @@ export function zipEfaToUnix(attrs: number) {
  * Get stat mode value from ZIP file external file attributes, if present.
  *
  * @param attrs Attributes value.
- * @return Stat mode or null.
+ * @returns Stat mode or null.
  */
 export function zipEfaToUnixMode(attrs: number) {
 	const mode = zipEfaToUnix(attrs);
 
 	// Check if type bits are present, else no Unix info.
-	// tslint:disable-next-line: no-bitwise
+	// eslint-disable-next-line no-bitwise
 	return ((mode >> 12) & 0b1111) ? mode : null;
 }
 
@@ -183,7 +187,7 @@ export function zipEfaToUnixMode(attrs: number) {
  *
  * @param attrs Attributes value.
  * @param path Entry path.
- * @return Path type.
+ * @returns Path type.
  */
 export function zipPathTypeFromEfaAndPath(attrs: number, path: string) {
 	// Check for Unix stat type information.
@@ -191,7 +195,7 @@ export function zipPathTypeFromEfaAndPath(attrs: number, path: string) {
 	if (!mode) {
 		// No Unix type infromation, assume Windows info only.
 		// Only files and directories, with directores having a trailing slash.
-		return /[\\\/]$/.test(path) ? PathType.DIRECTORY : PathType.FILE;
+		return /[\\/]$/.test(path) ? PathType.DIRECTORY : PathType.FILE;
 	}
 	return modeToPathType(mode);
 }
@@ -200,7 +204,7 @@ export function zipPathTypeFromEfaAndPath(attrs: number, path: string) {
  * Check if path is a Mac resource fork related path.
  *
  * @param path Zip path.
- * @return Boolean value.
+ * @returns Boolean value.
  */
 export function zipPathIsMacResource(path: string) {
 	return /^__MACOSX(\\|\/|$)/.test(path);
@@ -211,9 +215,9 @@ export function zipPathIsMacResource(path: string) {
  * Reading a stream into a buffer should be avoided where possible.
  * This is however useful for some small streams.
  *
- * @param stream Readable stream
+ * @param stream Readable stream.
  * @param doneEvent The stream done event.
- * @return Full buffer.
+ * @returns Full buffer.
  */
 export async function streamToBuffer(
 	stream: Readable,
@@ -285,7 +289,7 @@ export async function streamReadEnd(
  * Useful for converting an active stream into an pending stream.
  *
  * @param stream Readable-compatible stream.
- * @return Readable stream.
+ * @returns Readable stream.
  */
 export function streamToReadable(stream: Readable) {
 	// Pause stream, resumed only when needed.
@@ -389,7 +393,7 @@ export async function fsLutimes(
 	// Node does not currently implement lutimes.
 	// It can be done though the file descriptor.
 	// Essentially this is what the lchmod implementation does.
-	// tslint:disable-next-line no-bitwise
+	// eslint-disable-next-line no-bitwise
 	const fd = await fse.open(path, O_WRONLY | O_SYMLINK);
 	await fse.futimes(fd, atime, mtime);
 	await fse.close(fd);
@@ -401,7 +405,7 @@ export const fsLutimesSupported = !!(fseLchmod && O_SYMLINK !== null);
  * A readlink wrapper that returns raw link buffer.
  *
  * @param path Link path.
- * @return Raw link.
+ * @returns Raw link.
  */
 export async function fsReadlinkRaw(path: string) {
 	const r = await (fse.readlink as any)(path, 'buffer');
@@ -435,7 +439,7 @@ export async function fsChmod(path: string, mode: number) {
  * A readdir wrapper with consistent output.
  *
  * @param path Directory path.
- * @return Directory listing.
+ * @returns Directory listing.
  */
 export async function fsReaddir(path: string) {
 	return (await fse.readdir(path)).sort();
@@ -445,7 +449,7 @@ export async function fsReaddir(path: string) {
  * An lstat wrapper.
  *
  * @param path Path string.
- * @return Stat object.
+ * @returns Stat object.
  */
 export async function fsLstat(path: string) {
 	const r = await fse.lstat(path);
@@ -456,14 +460,14 @@ export async function fsLstat(path: string) {
  * An lstat wrapper returning null if not exist.
  *
  * @param path Path string.
- * @return Stat object.
+ * @returns Stat object.
  */
 export async function fsLstatExists(path: string) {
 	try {
 		return await fsLstat(path);
 	}
 	catch (err) {
-		const code = err.code;
+		const {code} = err;
 		if (
 			code === 'ENOENT' ||
 			code === 'ENOTDIR'
@@ -481,6 +485,7 @@ export async function fsLstatExists(path: string) {
  *
  * @param base Directory path.
  * @param itter Callback for each entry.
+ * @param options Walk options.
  */
 export async function fsWalk(
 	base: string,
@@ -494,9 +499,11 @@ export async function fsWalk(
 	while (stack.length) {
 		const entry = stack.pop() as string;
 		const fullPath = pathJoin(base, entry);
+		// eslint-disable-next-line no-await-in-loop
 		const stat = await fsLstat(fullPath);
 
 		// Callback, possibly stop recursion on directory.
+		// eslint-disable-next-line no-await-in-loop
 		const recurse = await itter(entry, stat);
 		if (recurse === null) {
 			break;
@@ -508,6 +515,7 @@ export async function fsWalk(
 		// Recurse down.
 		let subs: string[] = [];
 		try {
+			// eslint-disable-next-line no-await-in-loop
 			subs = await fsReaddir(fullPath);
 		}
 		catch (err) {

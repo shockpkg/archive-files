@@ -1,14 +1,14 @@
-import {
-	createReadStream as fseCreateReadStream
-} from 'fs-extra';
+/* eslint-disable max-classes-per-file */
+
 import {
 	Readable,
 	Transform
 } from 'stream';
-import {
-	extract as tarExtract,
-	Headers as TarHeaders
-} from 'tar-stream';
+
+import fse from 'fs-extra';
+import tarStream from 'tar-stream';
+
+const tarExtract = tarStream.extract;
 
 import {
 	Archive,
@@ -27,6 +27,7 @@ import {
 } from '../util';
 
 export interface IEntryInfoTar extends IEntryInfo {
+
 	/**
 	 * Entry archive.
 	 */
@@ -220,7 +221,7 @@ export class ArchiveTar extends Archive {
 		let cancelError: Error | null = null;
 
 		const each = async (
-			header: TarHeaders,
+			header: tarStream.Headers,
 			stream: () => Readable
 		) => {
 			// Check type, skip unsupported.
@@ -255,8 +256,8 @@ export class ArchiveTar extends Archive {
 
 			// Used for symbolic links, convert to a buffer.
 			const linkname = defaultNull(header.linkname);
-			const linknameBuffer = linkname !== null ?
-				Buffer.from(linkname, 'utf8') : null;
+			const linknameBuffer = linkname === null ?
+				null : Buffer.from(linkname, 'utf8');
 
 			const readData = type === PathType.FILE ?
 				async () => stream() : null;
@@ -287,10 +288,10 @@ export class ArchiveTar extends Archive {
 				readSymlink
 			});
 			const ret = await entry.trigger(itter);
-			return ret === false ? true : false;
+			return ret === false;
 		};
 
-		const reader = fseCreateReadStream(this.path);
+		const reader = fse.createReadStream(this.path);
 
 		const decompressors = this._decompressionTransforms();
 
@@ -363,7 +364,7 @@ export class ArchiveTar extends Archive {
 	/**
 	 * Get decompression transform streams.
 	 *
-	 * @return List of decompression transforms.
+	 * @returns List of decompression transforms.
 	 */
 	protected _decompressionTransforms(): Transform[] {
 		return [];

@@ -1,9 +1,7 @@
-// tslint:disable:completed-docs
+/* eslint-env jasmine */
+/* eslint-disable max-classes-per-file */
+/* eslint-disable jsdoc/require-jsdoc */
 
-import {
-	ensureDir as fseEnsureDir,
-	remove as fseRemove
-} from 'fs-extra';
 import {
 	platform as osPlatform
 } from 'os';
@@ -11,6 +9,11 @@ import {join as pathJoin} from 'path';
 import {
 	Readable
 } from 'stream';
+
+import {
+	ensureDir as fseEnsureDir,
+	remove as fseRemove
+} from 'fs-extra';
 
 import {
 	Archive,
@@ -33,6 +36,7 @@ import {
 // An option to disable mtime testing (for a CI that has issues).
 // For Travis on Windows, which randomly fails to have the correct mtime.
 export const disableMtimeTesting =
+	// eslint-disable-next-line no-process-env
 	process.env.ARCHIVE_FILES_DISABLE_MTIME_TESTING === '1';
 
 export const specTmpPath = pathJoin('spec', 'tmp');
@@ -169,7 +173,7 @@ const testEntries = [
 		type: PathType.FILE,
 		pathRaw: 'rsrc-content.bin',
 		size: 4,
-		readData: async () => bufferToStream(Buffer.from('data')),
+		readData: async () => bufferToStream(Buffer.from('data'))
 	},
 	{
 		type: PathType.RESOURCE_FORK,
@@ -199,6 +203,7 @@ export class ArchiveTest extends Archive {
 	protected async _read(itter: (entry: EntryTest) => Promise<any>) {
 		for (const info of testEntries) {
 			const entry = new this.Entry({archive: this, ...info});
+			// eslint-disable-next-line no-await-in-loop
 			const ret = await entry.trigger(itter);
 			if (ret === false) {
 				break;
@@ -314,7 +319,12 @@ export function testArchive(
 							expect(entry.volumeName)
 								.toBe(entry.path.split('/')[0]);
 							expect(entry.volumePath)
-								.toBe(entry.path.split('/').slice(1).join('/'));
+								.toBe(
+									entry.path
+										.split('/')
+										.slice(1)
+										.join('/')
+								);
 						}
 						else {
 							expect(entry.volumeName).toBe(null);
@@ -337,6 +347,7 @@ export function testArchive(
 
 					for (const entry of entries) {
 						const dest = pathJoin(specTmpExtractPath, entry.path);
+						// eslint-disable-next-line no-await-in-loop
 						const stat = await fsLstat(dest);
 
 						const {type, size, mode, atime, mtime} = entry;
@@ -355,6 +366,7 @@ export function testArchive(
 							}
 							else if (type === PathType.RESOURCE_FORK) {
 								const destRsrc = pathResourceFork(dest);
+								// eslint-disable-next-line no-await-in-loop
 								const statRsrc = await fsLstat(destRsrc);
 								expect(statRsrc.size).toBe(size, dest);
 							}

@@ -1,3 +1,5 @@
+/* eslint-env jasmine */
+
 import {
 	createArchiveByFileExtension
 } from './create';

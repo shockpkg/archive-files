@@ -1,8 +1,11 @@
+/* eslint-env jasmine */
+
+import {join as pathJoin} from 'path';
+
 import {
 	chmod as fseLchmod,
 	ensureDir as fseEnsureDir
 } from 'fs-extra';
-import {join as pathJoin} from 'path';
 
 import {
 	ArchiveTest,

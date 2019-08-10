@@ -1,14 +1,15 @@
-import {Mounter} from '@shockpkg/hdi-mac';
+/* eslint-disable max-classes-per-file */
+
 import {
 	Stats
 } from 'fs';
 import {
-	createReadStream as fseCreateReadStream
-} from 'fs-extra';
-import {
 	basename as pathBasename,
 	join as pathJoin
 } from 'path';
+
+import {Mounter} from '@shockpkg/hdi-mac';
+import fse from 'fs-extra';
 
 import {
 	Archive,
@@ -32,6 +33,7 @@ const walkOpts = {
 };
 
 export interface IEntryInfoHdi extends IEntryInfo {
+
 	/**
 	 * Entry archive.
 	 */
@@ -153,6 +155,8 @@ export class EntryHdi extends Entry {
 
 	/**
 	 * Get the path of resource psuedo-file, raw.
+	 *
+	 * @returns Path string.
 	 */
 	public get rsrcPathRaw() {
 		return pathResourceFork(this.pathRaw);
@@ -160,6 +164,8 @@ export class EntryHdi extends Entry {
 
 	/**
 	 * Get the path of resource psuedo-file, normalized.
+	 *
+	 * @returns Path string.
 	 */
 	public get rsrcPath() {
 		return pathNormalize(pathResourceFork(this.path));
@@ -237,7 +243,7 @@ export class ArchiveHdi extends Archive {
 			const {size, mode, uid, gid, atime, mtime} = stat;
 
 			const readData = type === PathType.FILE ?
-				async () => fseCreateReadStream(pathFull) : null;
+				async () => fse.createReadStream(pathFull) : null;
 
 			const readSymlink = type === PathType.SYMLINK ?
 				async () => fsReadlinkRaw(pathFull) : null;
@@ -269,7 +275,7 @@ export class ArchiveHdi extends Archive {
 					const sizeRsrc = rsrcStat.size;
 
 					const readRsrc =
-						async () => fseCreateReadStream(rsrcPathFull);
+						async () => fse.createReadStream(rsrcPathFull);
 
 					const entryRsrc = new this.Entry({
 						archive: this,
@@ -314,6 +320,7 @@ export class ArchiveHdi extends Archive {
 				}
 
 				const volumeName = pathBasename(mountPoint);
+				// eslint-disable-next-line no-await-in-loop
 				await fsWalk(mountPoint, async (pathRel, stat) => {
 					const pathFull = pathJoin(mountPoint, pathRel);
 					const pathRaw = pathJoin(volumeName, pathRel);
