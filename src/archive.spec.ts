@@ -1,7 +1,3 @@
-/* eslint-env jasmine */
-/* eslint-disable max-classes-per-file */
-/* eslint-disable jsdoc/require-jsdoc */
-
 import {
 	platform as osPlatform
 } from 'os';
