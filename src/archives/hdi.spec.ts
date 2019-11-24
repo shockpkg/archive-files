@@ -20,7 +20,8 @@ describe('archives/hdi', () => {
 				'test-archive-hfsp-j-c.dmg',
 				'test-archive-apfs.dmg',
 				'test-archive-apfs-c.dmg'
-			].map(s => pathJoin(specFixturesPath, s)) : null
+			].map(s => pathJoin(specFixturesPath, s)) : null,
+			true
 		);
 	});
 });

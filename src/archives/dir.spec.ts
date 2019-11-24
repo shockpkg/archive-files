@@ -22,6 +22,7 @@ describe('archives/dir', () => {
 			[
 				specTmpArchivePath
 			],
+			true,
 			async () => {
 				// Extract test archive for dummy contents.
 				const archive = new ArchiveTest('dummy.file');

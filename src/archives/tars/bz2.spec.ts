@@ -13,7 +13,8 @@ describe('archives/tar/bz2', () => {
 			ArchiveTarBz2,
 			[
 				'test-archive-gtar.tar.bz2'
-			].map(s => pathJoin(specFixturesPath, s))
+			].map(s => pathJoin(specFixturesPath, s)),
+			false
 		);
 	});
 });

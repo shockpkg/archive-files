@@ -211,6 +211,7 @@ export class ArchiveTest extends Archive {
 export function testArchive(
 	ArchiveConstructor: new(path: string) => Archive,
 	paths: string[] | null,
+	skippable: boolean,
 	setup: (() => Promise<any>) | null = null
 ) {
 	if (!paths) {
@@ -412,6 +413,28 @@ export function testArchive(
 
 					expect(count).toBe(1);
 				});
+
+				if (skippable) {
+					it('skip', async () => {
+						const archive = new ArchiveConstructor(path);
+
+						const seen: string[] = [];
+						await archive.read(async entry => {
+							const {path} = entry;
+							for (const p of seen) {
+								if (
+									path.startsWith(`${p}/`) ||
+									path.startsWith(`${p}\\`)
+								) {
+									throw new Error('Skip failed');
+								}
+							}
+							seen.push(path);
+
+							return null;
+						});
+					});
+				}
 			});
 		});
 	}
@@ -423,7 +446,8 @@ describe('archive', () => {
 			ArchiveTest,
 			[
 				'dummy.file'
-			]
+			],
+			false
 		);
 	});
 });

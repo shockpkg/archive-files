@@ -15,7 +15,8 @@ describe('archives/zip', () => {
 				'test-archive-zip.zip',
 				'test-archive-7z.zip',
 				'test-archive-ditto.zip'
-			].map(s => pathJoin(specFixturesPath, s))
+			].map(s => pathJoin(specFixturesPath, s)),
+			false
 		);
 	});
 });

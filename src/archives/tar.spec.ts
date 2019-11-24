@@ -13,7 +13,8 @@ describe('archives/tar', () => {
 			ArchiveTar,
 			[
 				'test-archive-gtar.tar'
-			].map(s => pathJoin(specFixturesPath, s))
+			].map(s => pathJoin(specFixturesPath, s)),
+			false
 		);
 	});
 });
