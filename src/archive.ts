@@ -891,8 +891,9 @@ export abstract class Archive extends Object {
 	}
 
 	/**
-	 * Read archive, class implementation.
+	 * Read archive.
 	 * If the itter callback returns false, reading ends.
+	 * If the itter callback returns null, skip descent where available.
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
@@ -946,6 +947,7 @@ export abstract class Archive extends Object {
 	/**
 	 * Read archive, class implementation.
 	 * If the itter callback returns false, reading ends.
+	 * If the itter callback returns null, skip descent where available.
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */

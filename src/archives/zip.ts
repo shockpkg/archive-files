@@ -348,7 +348,7 @@ export class ArchiveZip extends Archive {
 	}
 
 	/**
-	 * Read archive, class implementation.
+	 * Read archive.
 	 * If the itter callback returns false, reading ends.
 	 *
 	 * @param itter Async callback for each archive entry.

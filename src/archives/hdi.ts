@@ -213,8 +213,9 @@ export class ArchiveHdi extends Archive {
 	}
 
 	/**
-	 * Read archive, class implementation.
+	 * Read archive.
 	 * If the itter callback returns false, reading ends.
+	 * If the itter callback returns null, skip descent.
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
@@ -224,6 +225,8 @@ export class ArchiveHdi extends Archive {
 
 	/**
 	 * Read archive, class implementation.
+	 * If the itter callback returns false, reading ends.
+	 * If the itter callback returns null, skip descent.
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
@@ -266,6 +269,9 @@ export class ArchiveHdi extends Archive {
 			if (ret === false) {
 				return null;
 			}
+			if (ret === null) {
+				return false;
+			}
 
 			if (type === PathType.FILE) {
 				const rsrcPathFull = pathResourceFork(pathFull);
@@ -293,6 +299,9 @@ export class ArchiveHdi extends Archive {
 					const ret = await entryRsrc.trigger(itter);
 					if (ret === false) {
 						return null;
+					}
+					if (ret === null) {
+						return false;
 					}
 				}
 			}
