@@ -6,7 +6,6 @@ matrix:
     node_js: v10.0.0
 
   - os: osx
-    osx_image: xcode10.2
     node_js: v10.0.0
 
   - os: windows
@@ -15,14 +14,13 @@ matrix:
     - ARCHIVE_FILES_DISABLE_MTIME_TESTING=1
 
   - os: linux
-    node_js: v13.2.0
+    node_js: v13.5.0
 
   - os: osx
-    osx_image: xcode10.2
-    node_js: v13.2.0
+    node_js: v13.5.0
 
   - os: windows
-    node_js: v13.2.0
+    node_js: v13.5.0
     env:
     - ARCHIVE_FILES_DISABLE_MTIME_TESTING=1
 
