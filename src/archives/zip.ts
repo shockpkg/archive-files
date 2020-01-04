@@ -30,6 +30,15 @@ const yauzlEntryReadP = async (
 	zipfile: yauzl.ZipFile,
 	entry: yauzl.Entry
 ) => {
+	// If the entry is empty, just return an empty stream.
+	if (!entry.uncompressedSize) {
+		return new Readable({
+			read: function read(size) {
+				this.push(null);
+			}
+		});
+	}
+
 	const openP = promisify(zipfile.openReadStream.bind(zipfile));
 	const r = await openP(entry);
 	return r as Readable;
