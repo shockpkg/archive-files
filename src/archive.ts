@@ -548,20 +548,11 @@ export abstract class Entry extends Object {
 			}
 		}
 
-		// Ensure base directory exists.
-		await fse.ensureDir(pathDirname(path));
-
-		const stream = await reader();
-
 		// Write file.
+		await fse.outputFile(path, Buffer.alloc(0));
+		const stream = await reader();
 		if (stream) {
-			await streamToFile(
-				stream,
-				fse.createWriteStream(path, {flags: 'wx'})
-			);
-		}
-		else {
-			await fse.ensureFile(path);
+			await streamToFile(stream, fse.createWriteStream(path));
 		}
 
 		// Set attributes.
@@ -619,13 +610,10 @@ export abstract class Entry extends Object {
 		// Write the resource fork.
 		const stream = await readRsrc();
 		if (stream) {
-			await streamToFile(
-				stream,
-				fse.createWriteStream(pathRsrc, {flags: 'w'})
-			);
+			await streamToFile(stream, fse.createWriteStream(pathRsrc));
 		}
 		else {
-			await fse.ensureFile(pathRsrc);
+			await fse.writeFile(pathRsrc, Buffer.alloc(0));
 		}
 
 		// Set attributes.
