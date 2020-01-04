@@ -153,12 +153,12 @@ export interface IEntryInfo {
 	/**
 	 * Read data.
 	 */
-	readData?: (() => Promise<Readable>) | null;
+	readData?: (() => Promise<Readable | null>) | null;
 
 	/**
 	 * Read rsrc.
 	 */
-	readRsrc?: (() => Promise<Readable>) | null;
+	readRsrc?: (() => Promise<Readable | null>) | null;
 
 	/**
 	 * Read symlink.
@@ -241,13 +241,13 @@ export abstract class Entry extends Object {
 	 * Read data.
 	 */
 	@property(false)
-	protected readonly _readData: (() => Promise<Readable>) | null;
+	protected readonly _readData: (() => Promise<Readable | null>) | null;
 
 	/**
 	 * Read rsrc.
 	 */
 	@property(false)
-	protected readonly _readRsrc: (() => Promise<Readable>) | null;
+	protected readonly _readRsrc: (() => Promise<Readable | null>) | null;
 
 	/**
 	 * Read symlink.
@@ -531,7 +531,7 @@ export abstract class Entry extends Object {
 	 */
 	protected async _extractStreamToFile(
 		path: string,
-		reader: () => Promise<Readable>,
+		reader: () => Promise<Readable | null>,
 		options: IExtractOptions
 	) {
 		const replace = defaultValue(options.replace, false);
@@ -551,11 +551,18 @@ export abstract class Entry extends Object {
 		// Ensure base directory exists.
 		await fse.ensureDir(pathDirname(path));
 
+		const stream = await reader();
+
 		// Write file.
-		await streamToFile(
-			await reader(),
-			fse.createWriteStream(path, {flags: 'wx'})
-		);
+		if (stream) {
+			await streamToFile(
+				stream,
+				fse.createWriteStream(path, {flags: 'wx'})
+			);
+		}
+		else {
+			await fse.ensureFile(path);
+		}
 
 		// Set attributes.
 		await this.setAttributes(path, null, options);
@@ -610,10 +617,16 @@ export abstract class Entry extends Object {
 		const pathRsrc = pathResourceFork(path);
 
 		// Write the resource fork.
-		await streamToFile(
-			await readRsrc(),
-			fse.createWriteStream(pathRsrc, {flags: 'w'})
-		);
+		const stream = await readRsrc();
+		if (stream) {
+			await streamToFile(
+				stream,
+				fse.createWriteStream(pathRsrc, {flags: 'w'})
+			);
+		}
+		else {
+			await fse.ensureFile(pathRsrc);
+		}
 
 		// Set attributes.
 		await this.setAttributes(path, null, options);

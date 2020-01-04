@@ -32,11 +32,7 @@ const yauzlEntryReadP = async (
 ) => {
 	// If the entry is empty, just return an empty stream.
 	if (!entry.uncompressedSize) {
-		return new Readable({
-			read: function read(size) {
-				this.push(null);
-			}
-		});
+		return null;
 	}
 
 	const openP = promisify(zipfile.openReadStream.bind(zipfile));
@@ -49,8 +45,7 @@ const yauzlEntryReadSymlinkP = async (
 	entry: yauzl.Entry
 ) => {
 	const stream = await yauzlEntryReadP(zipfile, entry);
-	const buffer = await streamToBuffer(stream, 'end');
-	return buffer;
+	return stream ? streamToBuffer(stream, 'end') : Buffer.alloc(0);
 };
 
 export interface IZipEntryExtraField {
