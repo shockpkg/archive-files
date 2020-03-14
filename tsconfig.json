@@ -30,7 +30,6 @@
 			"node",
 			"jasmine",
 			"fs-extra",
-			"tar-stream",
 			"yauzl"
 		],
 		"outDir": "lib"

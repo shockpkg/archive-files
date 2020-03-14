@@ -6,9 +6,9 @@ import {
 } from 'stream';
 
 import fse from 'fs-extra';
-import tarStream from 'tar-stream';
-
-const tarExtract = tarStream.extract;
+import itPipe from 'it-pipe';
+// @ts-ignore
+import itTar from 'it-tar';
 
 import {
 	Archive,
@@ -25,6 +25,22 @@ import {
 	streamPipeline,
 	streamToReadable
 } from '../util';
+
+// Create stream from a BufferList generator.
+const streamFromBufferListGenerator = (gen: AsyncGenerator) => {
+	const r = new Readable({
+		read: () => {
+			gen.next()
+				.then(({done, value}) => {
+					r.push(done ? null : value.slice());
+				},
+				err => {
+					r.emit('error', err);
+				});
+		}
+	});
+	return r;
+};
 
 export interface IEntryInfoTar extends IEntryInfo {
 
@@ -218,10 +234,8 @@ export class ArchiveTar extends Archive {
 	protected async _read(
 		itter: (entry: EntryTar) => Promise<any>
 	) {
-		let cancelError: Error | null = null;
-
 		const each = async (
-			header: tarStream.Headers,
+			header: any,
 			stream: () => Readable
 		) => {
 			// Check type, skip unsupported.
@@ -244,8 +258,8 @@ export class ArchiveTar extends Archive {
 				}
 			}
 
-			// When extracting, the following are guaranteed not undefined.
-			const pathRaw = header.name;
+			// These values should always be set.
+			const pathRaw = header.name as string;
 			let size = header.size as number;
 			const mode = header.mode as number;
 			const uid = header.uid as number;
@@ -291,72 +305,57 @@ export class ArchiveTar extends Archive {
 			return ret === false;
 		};
 
-		const reader = fse.createReadStream(this.path);
+		// List all the pipes.
+		const streams = [
+			fse.createReadStream(this.path),
+			...this._decompressionTransforms()
+		];
 
-		const decompressors = this._decompressionTransforms();
-
-		const extract = tarExtract();
-		extract.on('entry', async (
-			header,
-			stream,
-			next
-		) => {
-			const r = streamToReadable(stream);
-
-			// Function to forward a single error to fail extract pipeline.
-			let extractErrored = false;
-			const extractError = (err: any) => {
-				if (!extractErrored) {
-					extractErrored = true;
-					extract.emit('error', err);
+		// Create the extract handlers.
+		let cancel = false;
+		const extract = itTar.extract();
+		const extracter = async (source: any) => {
+			for await (const {header, body} of source) {
+				// Call handler for each, break off on cancel.
+				cancel = await each(
+					header,
+					() => streamFromBufferListGenerator(body)
+				);
+				if (cancel) {
+					return;
 				}
-			};
 
-			// On any errors, fail the pipeline.
-			r.on('error', extractError);
+				// Finish reading the body if not read.
+				// eslint-disable-next-line no-await-in-loop
+				while (!(await body.next()).done) {
+					// Do nothing.
+				}
+			}
+		};
 
-			// Once this entry ends, continue on to the next one.
-			r.on('end', next);
+		// If more than one stream, setup a pipeline.
+		if (streams.length > 1) {
+			const last = streams[streams.length - 1];
+			const piped = (streamPipeline as any)(...streams);
+			await itPipe(streamToReadable(last), extract, extracter);
 
-			let continued = false;
-			const read = () => {
-				continued = true;
-				return r;
-			};
-
-			// Handle entry, on any errors fail the pipeline.
-			let cancel = false;
+			// On cancel, destroy pipeline, ignore any errors from doing that.
+			if (cancel) {
+				last.destroy();
+			}
 			try {
-				cancel = await each(header, read);
+				await piped;
 			}
 			catch (err) {
-				extractError(err);
-				return;
+				if (!cancel) {
+					throw err;
+				}
 			}
-
-			// If cancel, pause streams and throw cancel error.
-			if (cancel) {
-				r.pause();
-				reader.pause();
-				cancelError = new Error();
-				extractError(cancelError);
-				return;
-			}
-
-			// If this entry was not read by the handler, continue over it.
-			if (!continued) {
-				r.resume();
-			}
-		});
-
-		try {
-			// Pipeline type does not work with variable arguments.
-			await (streamPipeline as any)(reader, ...decompressors, extract);
 		}
-		catch (err) {
-			// If not the cancel error, throw.
-			if (err !== cancelError) {
-				throw err;
+		else {
+			await itPipe(streams[0], extract, extracter);
+			if (cancel) {
+				streams[0].destroy();
 			}
 		}
 	}
