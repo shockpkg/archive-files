@@ -1,6 +1,5 @@
 /* eslint-disable max-classes-per-file */
 
-import {Readable} from 'stream';
 import {promisify} from 'util';
 
 import yauzl from 'yauzl';
@@ -16,6 +15,7 @@ import {
 } from '../types';
 import {
 	streamToBuffer,
+	streamToReadable,
 	zipEfaToUnixMode,
 	zipPathIsMacResource,
 	zipPathTypeFromEfaAndPath
@@ -36,8 +36,8 @@ const yauzlEntryReadP = async (
 	}
 
 	const openP = promisify(zipfile.openReadStream.bind(zipfile));
-	const r = await openP(entry);
-	return r as Readable;
+	const opened = await openP(entry);
+	return streamToReadable(opened);
 };
 
 const yauzlEntryReadSymlinkP = async (
