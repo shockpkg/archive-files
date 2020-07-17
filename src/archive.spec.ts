@@ -186,6 +186,7 @@ export class EntryTest extends Entry {
 }
 
 export class ArchiveTest extends Archive {
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public readonly Entry = EntryTest;
 
 	constructor(path: string) {

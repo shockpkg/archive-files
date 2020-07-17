@@ -20,6 +20,7 @@ interface IArchiveExt {
 	/**
 	 * Archive constructor.
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	Archive: typeof Archive;
 
 	/**
@@ -49,6 +50,7 @@ function archivesExtensions() {
 		}
 		for (const ext of exts) {
 			all.push({
+				// eslint-disable-next-line @typescript-eslint/naming-convention
 				Archive,
 				ext: ext.toLowerCase()
 			});
@@ -69,6 +71,7 @@ function archivesExtensions() {
 export function createArchiveByFileExtension(path: string) {
 	const pathLower = path.toLowerCase();
 	const list = archivesExtensions();
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	for (const {Archive, ext} of list) {
 		if (pathLower.endsWith(ext)) {
 			return new (Archive as any)(path) as Archive;

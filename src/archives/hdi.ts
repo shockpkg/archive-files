@@ -182,7 +182,7 @@ export class ArchiveHdi extends Archive {
 	 * List of file extensions, or null.
 	 * All subclasses should implement this property.
 	 */
-	public static FILE_EXTENSIONS: string[] | null = [
+	public static readonly FILE_EXTENSIONS: string[] | null = [
 		'.dmg',
 		'.iso',
 		'.cdr'
@@ -196,6 +196,7 @@ export class ArchiveHdi extends Archive {
 	/**
 	 * Entry constructor.
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public readonly Entry = EntryHdi;
 
 	/**
@@ -311,10 +312,12 @@ export class ArchiveHdi extends Archive {
 
 		// Attach disk image, using automatic eject on shutdown (3rd arg).
 		// Just in case process shutdown without reaching finally.
-		const {devices, eject} = await this.mounterMac.attach(
+		const {mounterMac, nobrowse} = this;
+		// eslint-disable-next-line @typescript-eslint/unbound-method
+		const {devices, eject} = await mounterMac.attach(
 			this.path,
 			{
-				nobrowse: this.nobrowse,
+				nobrowse,
 				readonly: true
 			},
 			{}

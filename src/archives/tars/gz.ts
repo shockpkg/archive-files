@@ -46,7 +46,7 @@ export class ArchiveTarGz extends ArchiveTar {
 	 * List of file extensions, or null.
 	 * All subclasses should implement this property.
 	 */
-	public static FILE_EXTENSIONS: string[] | null = [
+	public static readonly FILE_EXTENSIONS: string[] | null = [
 		'.tar.gz',
 		'.tgz'
 	];
@@ -54,6 +54,7 @@ export class ArchiveTarGz extends ArchiveTar {
 	/**
 	 * Entry constructor.
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public readonly Entry = EntryTarGz;
 
 	constructor(path: string) {

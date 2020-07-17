@@ -47,7 +47,7 @@ export class ArchiveTarBz2 extends ArchiveTar {
 	 * List of file extensions, or null.
 	 * All subclasses should implement this property.
 	 */
-	public static FILE_EXTENSIONS: string[] | null = [
+	public static readonly FILE_EXTENSIONS: string[] | null = [
 		'.tar.bz2',
 		'.tbz2'
 	];
@@ -55,6 +55,7 @@ export class ArchiveTarBz2 extends ArchiveTar {
 	/**
 	 * Entry constructor.
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public readonly Entry = EntryTarBz2;
 
 	constructor(path: string) {

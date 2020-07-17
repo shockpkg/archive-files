@@ -312,7 +312,7 @@ export class ArchiveZip extends Archive {
 	 * List of file extensions, or null.
 	 * All subclasses should implement this property.
 	 */
-	public static FILE_EXTENSIONS: string[] | null = [
+	public static readonly FILE_EXTENSIONS: string[] | null = [
 		'.zip'
 	];
 

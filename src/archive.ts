@@ -796,7 +796,7 @@ export abstract class Archive extends Object {
 	 * List of file extensions, or null.
 	 * All subclasses should implement this property.
 	 */
-	public static FILE_EXTENSIONS: string[] | null = null;
+	public static readonly FILE_EXTENSIONS: string[] | null = null;
 
 	/**
 	 * Archive has named volumes that each entry will be under.
@@ -806,6 +806,7 @@ export abstract class Archive extends Object {
 	/**
 	 * Entry constructor.
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public readonly Entry = Entry;
 
 	/**

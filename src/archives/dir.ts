@@ -180,11 +180,12 @@ export class ArchiveDir extends Archive {
 	 * List of file extensions, or null.
 	 * All subclasses should implement this property.
 	 */
-	public static FILE_EXTENSIONS: string[] | null = null;
+	public static readonly FILE_EXTENSIONS: string[] | null = null;
 
 	/**
 	 * Entry constructor.
 	 */
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public readonly Entry = EntryDir;
 
 	constructor(path: string) {

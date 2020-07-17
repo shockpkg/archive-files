@@ -23,6 +23,7 @@ export interface IFsWalkOptions {
 
 const fseLchmod = fse.lchmod as any as (typeof fse.chmod | undefined);
 const fseConstants = fse.constants;
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const {O_WRONLY} = fseConstants;
 const O_SYMLINK = defaultNull(fseConstants.O_SYMLINK);
 
