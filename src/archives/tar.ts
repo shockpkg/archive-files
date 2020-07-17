@@ -209,7 +209,6 @@ export class ArchiveTar extends Archive {
 	/**
 	 * Entry constructor.
 	 */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public readonly Entry = EntryTar;
 
 	constructor(path: string) {

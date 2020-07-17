@@ -185,7 +185,6 @@ export class ArchiveDir extends Archive {
 	/**
 	 * Entry constructor.
 	 */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public readonly Entry = EntryDir;
 
 	constructor(path: string) {

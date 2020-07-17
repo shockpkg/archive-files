@@ -55,7 +55,6 @@ export class ArchiveTarBz2 extends ArchiveTar {
 	/**
 	 * Entry constructor.
 	 */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public readonly Entry = EntryTarBz2;
 
 	constructor(path: string) {

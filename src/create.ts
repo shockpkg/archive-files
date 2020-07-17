@@ -20,7 +20,6 @@ interface IArchiveExt {
 	/**
 	 * Archive constructor.
 	 */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
 	Archive: typeof Archive;
 
 	/**
@@ -50,7 +49,6 @@ function archivesExtensions() {
 		}
 		for (const ext of exts) {
 			all.push({
-				// eslint-disable-next-line @typescript-eslint/naming-convention
 				Archive,
 				ext: ext.toLowerCase()
 			});

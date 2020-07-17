@@ -806,7 +806,6 @@ export abstract class Archive extends Object {
 	/**
 	 * Entry constructor.
 	 */
-	// eslint-disable-next-line @typescript-eslint/naming-convention
 	public readonly Entry = Entry;
 
 	/**
