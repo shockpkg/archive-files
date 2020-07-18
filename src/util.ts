@@ -423,7 +423,18 @@ export async function fsSymlink(
 	path: string | Buffer,
 	target: string | Buffer
 ) {
-	await fse.symlink(target, path);
+	try {
+		await fse.symlink(target, path);
+	}
+	catch (err) {
+		// Workaround for issue in Node v14.5.0 on Windows.
+		if (err.name === 'TypeError' && typeof target !== 'string') {
+			await fse.symlink(target.toString(), path);
+		}
+		else {
+			throw err;
+		}
+	}
 }
 
 /**
