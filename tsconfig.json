@@ -28,9 +28,7 @@
 
 		"types": [
 			"node",
-			"jasmine",
-			"fs-extra",
-			"yauzl"
+			"jasmine"
 		],
 		"outDir": "lib"
 	},
