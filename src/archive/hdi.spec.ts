@@ -8,7 +8,7 @@ import {
 
 import {ArchiveHdi} from './hdi';
 
-describe('archives/hdi', () => {
+describe('archive/hdi', () => {
 	describe('ArchiveHdi', () => {
 		testArchive(
 			ArchiveHdi,

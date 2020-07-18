@@ -15,7 +15,7 @@ import {
 
 import {ArchiveDir} from './dir';
 
-describe('archives/dir', () => {
+describe('archive/dir', () => {
 	describe('ArchiveDir', () => {
 		testArchive(
 			ArchiveDir,

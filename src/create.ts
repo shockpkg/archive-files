@@ -1,10 +1,10 @@
 import {Archive} from './archive';
-import {ArchiveDir} from './archives/dir';
-import {ArchiveHdi} from './archives/hdi';
-import {ArchiveTar} from './archives/tar';
-import {ArchiveTarBz2} from './archives/tars/bz2';
-import {ArchiveTarGz} from './archives/tars/gz';
-import {ArchiveZip} from './archives/zip';
+import {ArchiveDir} from './archive/dir';
+import {ArchiveHdi} from './archive/hdi';
+import {ArchiveTar} from './archive/tar';
+import {ArchiveTarBz2} from './archive/tar/bz2';
+import {ArchiveTarGz} from './archive/tar/gz';
+import {ArchiveZip} from './archive/zip';
 
 const archives: (typeof Archive)[] = [
 	ArchiveDir,

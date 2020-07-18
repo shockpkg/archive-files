@@ -5,14 +5,14 @@ import {
 	testArchive
 } from '../../archive.spec';
 
-import {ArchiveTarBz2} from './bz2';
+import {ArchiveTarGz} from './gz';
 
-describe('archives/tar/bz2', () => {
+describe('archive/tar/gz', () => {
 	describe('ArchiveTarGz', () => {
 		testArchive(
-			ArchiveTarBz2,
+			ArchiveTarGz,
 			[
-				'test-archive-gtar.tar.bz2'
+				'test-archive-gtar.tar.gz'
 			].map(s => pathJoin(specFixturesPath, s)),
 			false
 		);

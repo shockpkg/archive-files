@@ -5,14 +5,16 @@ import {
 	testArchive
 } from '../archive.spec';
 
-import {ArchiveTar} from './tar';
+import {ArchiveZip} from './zip';
 
-describe('archives/tar', () => {
-	describe('ArchiveTar', () => {
+describe('archive/zip', () => {
+	describe('ArchiveZip', () => {
 		testArchive(
-			ArchiveTar,
+			ArchiveZip,
 			[
-				'test-archive-gtar.tar'
+				'test-archive-zip.zip',
+				'test-archive-7z.zip',
+				'test-archive-ditto.zip'
 			].map(s => pathJoin(specFixturesPath, s)),
 			false
 		);
