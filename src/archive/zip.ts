@@ -281,7 +281,7 @@ export class EntryZip extends Entry {
 	@property(false)
 	protected readonly _readRsrc: null = null;
 
-	constructor(info: IEntryInfoZip) {
+	constructor(info: Readonly<IEntryInfoZip>) {
 		super(info);
 
 		this.archive = info.archive;

@@ -99,7 +99,7 @@ export function pathResourceFork(path: string) {
  * @param stat Stats object.
  * @returns Path type.
  */
-export function statToPathType(stat: fse.Stats) {
+export function statToPathType(stat: Readonly<fse.Stats>) {
 	if (stat.isSymbolicLink()) {
 		return PathType.SYMLINK;
 	}
@@ -368,10 +368,10 @@ export const fsLchmodSupported = !!(fseLchmod && O_SYMLINK !== null);
  */
 export async function fsUtimes(
 	path: string,
-	atime: Date,
-	mtime: Date
+	atime: Readonly<Date>,
+	mtime: Readonly<Date>
 ) {
-	await fse.utimes(path, atime, mtime);
+	await fse.utimes(path, atime as Date, mtime as Date);
 }
 
 /**
@@ -383,8 +383,8 @@ export async function fsUtimes(
  */
 export async function fsLutimes(
 	path: string,
-	atime: Date,
-	mtime: Date
+	atime: Readonly<Date>,
+	mtime: Readonly<Date>
 ) {
 	// If lchmod is unsupported, lutimes should be also.
 	if (!(fseLchmod && O_SYMLINK !== null)) {
@@ -396,7 +396,7 @@ export async function fsLutimes(
 	// Essentially this is what the lchmod implementation does.
 	// eslint-disable-next-line no-bitwise
 	const fd = await fse.open(path, O_WRONLY | O_SYMLINK);
-	await fse.futimes(fd, atime, mtime);
+	await fse.futimes(fd, atime as Date, mtime as Date);
 	await fse.close(fd);
 }
 
@@ -420,16 +420,16 @@ export async function fsReadlinkRaw(path: string) {
  * @param target Target of symbolic link.
  */
 export async function fsSymlink(
-	path: string | Buffer,
-	target: string | Buffer
+	path: string | Readonly<Buffer>,
+	target: string | Readonly<Buffer>
 ) {
 	try {
-		await fse.symlink(target, path);
+		await fse.symlink(target as string | Buffer, path as string | Buffer);
 	}
 	catch (err) {
 		// Workaround for issue in Node v14.5.0 on Windows.
 		if (err.name === 'TypeError' && typeof target !== 'string') {
-			await fse.symlink(target.toString(), path);
+			await fse.symlink(target.toString(), path as string | Buffer);
 		}
 		else {
 			throw err;
@@ -505,7 +505,7 @@ export async function fsWalk(
 		path: string,
 		stat: fse.Stats
 	) => Promise<boolean | null | void>,
-	options: IFsWalkOptions = {}
+	options: Readonly<IFsWalkOptions> = {}
 ) {
 	const stack = (await fsReaddir(base)).reverse();
 	while (stack.length) {

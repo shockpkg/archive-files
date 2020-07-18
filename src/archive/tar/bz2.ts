@@ -30,7 +30,7 @@ export class EntryTarBz2 extends EntryTar {
 	 */
 	public readonly archive: ArchiveTarBz2;
 
-	constructor(info: IEntryInfoTarBz2) {
+	constructor(info: Readonly<IEntryInfoTarBz2>) {
 		super(info);
 
 		this.archive = info.archive;

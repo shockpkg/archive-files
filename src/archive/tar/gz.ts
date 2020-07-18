@@ -29,7 +29,7 @@ export class EntryTarGz extends EntryTar {
 	 */
 	public readonly archive: ArchiveTarGz;
 
-	constructor(info: IEntryInfoTarGz) {
+	constructor(info: Readonly<IEntryInfoTarGz>) {
 		super(info);
 
 		this.archive = info.archive;

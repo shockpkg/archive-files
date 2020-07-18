@@ -141,7 +141,7 @@ export class EntryHdi extends Entry {
 	 */
 	public readonly mtime: Date;
 
-	constructor(info: IEntryInfoHdi) {
+	constructor(info: Readonly<IEntryInfoHdi>) {
 		super(info);
 
 		this.archive = info.archive;

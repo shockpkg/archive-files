@@ -139,7 +139,7 @@ export class EntryDir extends Entry {
 	 */
 	public readonly mtime: Date;
 
-	constructor(info: IEntryInfoDir) {
+	constructor(info: Readonly<IEntryInfoDir>) {
 		super(info);
 
 		this.archive = info.archive;

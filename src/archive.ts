@@ -273,7 +273,7 @@ export abstract class Entry extends Object {
 	@property(false)
 	protected _extracted = false;
 
-	constructor(info: IEntryInfo) {
+	constructor(info: Readonly<IEntryInfo>) {
 		super();
 
 		this.archive = info.archive;
@@ -372,7 +372,10 @@ export abstract class Entry extends Object {
 	 * @param path Extract path.
 	 * @param options Extract options.
 	 */
-	public async extract(path: string, options: IExtractOptions = {}) {
+	public async extract(
+		path: string,
+		options: Readonly<IExtractOptions> = {}
+	) {
 		this._beginExtract();
 		await this._extract(path, options);
 	}
@@ -411,7 +414,7 @@ export abstract class Entry extends Object {
 	public async setAttributes(
 		path: string,
 		pathFull: string | null = null,
-		options: IExtractOptions = {}
+		options: Readonly<IExtractOptions> = {}
 	) {
 		const pathSet = pathFull === null ? path : pathFull;
 
@@ -496,7 +499,10 @@ export abstract class Entry extends Object {
 	 * @param path Extract path.
 	 * @param options Extract options.
 	 */
-	protected async _extract(path: string, options: IExtractOptions) {
+	protected async _extract(
+		path: string,
+		options: Readonly<IExtractOptions>
+	) {
 		this.archive.afterReadSetAttributesRemove(path);
 
 		switch (this.type) {
@@ -532,7 +538,7 @@ export abstract class Entry extends Object {
 	protected async _extractStreamToFile(
 		path: string,
 		reader: () => Promise<Readable | null>,
-		options: IExtractOptions
+		options: Readonly<IExtractOptions>
 	) {
 		const replace = defaultValue(options.replace, false);
 
@@ -567,7 +573,7 @@ export abstract class Entry extends Object {
 	 */
 	protected async _extractFile(
 		path: string,
-		options: IExtractOptions
+		options: Readonly<IExtractOptions>
 	) {
 		const readData = this._readData;
 		if (!readData) {
@@ -585,7 +591,7 @@ export abstract class Entry extends Object {
 	 */
 	protected async _extractResourceFork(
 		path: string,
-		options: IExtractOptions
+		options: Readonly<IExtractOptions>
 	) {
 		const readRsrc = this._readRsrc;
 		if (!readRsrc) {
@@ -628,7 +634,7 @@ export abstract class Entry extends Object {
 	 */
 	protected async _extractDirectory(
 		path: string,
-		options: IExtractOptions
+		options: Readonly<IExtractOptions>
 	) {
 		const replace = defaultValue(options.replace, false);
 
@@ -662,7 +668,7 @@ export abstract class Entry extends Object {
 	 */
 	protected async _extractSymlink(
 		path: string,
-		options: IExtractOptions
+		options: Readonly<IExtractOptions>
 	) {
 		const readSymlink = this._readSymlink;
 		if (!readSymlink) {
@@ -824,7 +830,7 @@ export abstract class Archive extends Object {
 	 */
 	@property(false)
 	protected _afterReadSetAttributes: (
-		Map<string, IArchiveAfterReadSetAttributesEntry> | null
+		Map<string, Readonly<IArchiveAfterReadSetAttributesEntry>> | null
 	) = null;
 
 	constructor(path: string) {
@@ -861,7 +867,7 @@ export abstract class Archive extends Object {
 	public afterReadSetAttributes(
 		path: string,
 		entry: Entry,
-		options: IExtractOptions = {}
+		options: Readonly<IExtractOptions> = {}
 	) {
 		const afters = this._afterReadSetAttributes;
 		if (!afters) {

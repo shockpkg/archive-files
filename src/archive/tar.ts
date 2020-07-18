@@ -177,7 +177,7 @@ export class EntryTar extends Entry {
 	@property(false)
 	protected readonly _readRsrc: null = null;
 
-	constructor(info: IEntryInfoTar) {
+	constructor(info: Readonly<IEntryInfoTar>) {
 		super(info);
 
 		this.archive = info.archive;
