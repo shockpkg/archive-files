@@ -1,6 +1,9 @@
+import fse from 'fs-extra';
+
 import {
 	fsLstatExists,
-	pathNormalize
+	pathNormalize,
+	fsSymlink
 } from './util';
 
 describe('util', () => {
@@ -35,6 +38,40 @@ describe('util', () => {
 				'spec/fixtures/files/lorem.txt/dir'
 			);
 			expect(stat).toBeNull();
+		});
+	});
+
+	describe('fsSymlink', () => {
+		beforeAll(async () => {
+			await fse.remove('spec/tmp/symlinks');
+			await fse.ensureDir('spec/tmp/symlinks');
+		});
+		afterAll(async () => {
+			await fse.remove('spec/tmp/symlinks');
+		});
+		it('string+string', async () => {
+			await fsSymlink(
+				'spec/tmp/symlinks/string-string',
+				'target'
+			);
+		});
+		it('string+buffer', async () => {
+			await fsSymlink(
+				'spec/tmp/symlinks/string-buffer',
+				Buffer.from('target')
+			);
+		});
+		it('buffer+string', async () => {
+			await fsSymlink(
+				Buffer.from('spec/tmp/symlinks/buffer-string'),
+				'target'
+			);
+		});
+		it('buffer+buffer', async () => {
+			await fsSymlink(
+				Buffer.from('spec/tmp/symlinks/buffer-buffer'),
+				Buffer.from('target')
+			);
 		});
 	});
 });
