@@ -5,7 +5,7 @@ Package for reading different archive files in a consistent way.
 [![npm](https://img.shields.io/npm/v/@shockpkg/archive-files.svg)](https://npmjs.com/package/@shockpkg/archive-files)
 [![node](https://img.shields.io/node/v/@shockpkg/archive-files.svg)](https://nodejs.org)
 
-[![dependencies](https://david-dm.org/shockpkg/archive-files.svg)](https://david-dm.org/shockpkg/archive-files)
+[![dependencies](https://img.shields.io/david/shockpkg/archive-files.svg)](https://david-dm.org/shockpkg/archive-files)
 [![size](https://packagephobia.now.sh/badge?p=@shockpkg/archive-files)](https://packagephobia.now.sh/result?p=@shockpkg/archive-files)
 [![downloads](https://img.shields.io/npm/dm/@shockpkg/archive-files.svg)](https://npmcharts.com/compare/@shockpkg/archive-files?minimal=true)
 
