@@ -73,7 +73,7 @@
 	},
 	"dependencies": {
 		"@babel/runtime": "^7.10.5",
-		"@shockpkg/hdi-mac": "^1.4.7",
+		"@shockpkg/hdi-mac": "^1.5.0",
 		"fs-extra": "^9.0.1",
 		"it-pipe": "^1.1.0",
 		"it-tar": "^1.2.2",
