@@ -9,7 +9,7 @@ Package for reading different archive files in a consistent way.
 [![size](https://packagephobia.now.sh/badge?p=@shockpkg/archive-files)](https://packagephobia.now.sh/result?p=@shockpkg/archive-files)
 [![downloads](https://img.shields.io/npm/dm/@shockpkg/archive-files.svg)](https://npmcharts.com/compare/@shockpkg/archive-files?minimal=true)
 
-[![travis-ci](https://travis-ci.com/shockpkg/archive-files.svg?branch=master)](https://travis-ci.com/shockpkg/archive-files)
+[![Build Status](https://github.com/shockpkg/archive-files/workflows/main/badge.svg?branch=master)](https://github.com/shockpkg/archive-files/actions?query=workflow%3Amain+branch%3Amaster)
 
 
 # Overview
