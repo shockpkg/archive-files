@@ -958,7 +958,7 @@ export abstract class Archive extends Object {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	protected abstract async _read(
+	protected abstract _read(
 		itter: (entry: Entry) => Promise<any>
 	): Promise<void>;
 }

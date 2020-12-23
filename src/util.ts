@@ -263,7 +263,7 @@ export async function streamReadEnd(
 	stream: Readable,
 	doneEvent: string = 'end'
 ) {
-	await new Promise((resolve, reject) => {
+	await new Promise<void>((resolve, reject) => {
 		let once = false;
 		const done = (err?: Error) => {
 			if (once) {

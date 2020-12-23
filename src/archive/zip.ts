@@ -440,7 +440,7 @@ export class ArchiveZip extends Archive {
 			return ret === false;
 		};
 
-		await new Promise((resolve, reject) => {
+		await new Promise<void>((resolve, reject) => {
 			let error: Error | null = null;
 			const next = (err: Error | null) => {
 				if (err) {
