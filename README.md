@@ -14,13 +14,19 @@ Package for reading different archive files in a consistent way.
 
 # Overview
 
-A consistent set of archive extractors.
-
-Mainly those features required to work with shockpkg packages are implemented.
-
-Support for other archives or other features are likely considered out of scope for this project.
+A consistent set of archive extractors, mainly those required to work with shockpkg packages, though other formats may be added.
 
 Some functionality, like disk image reading, resource forks, and file permissions, can only be fully supported on certain platforms.
+
+Currently supported archive files:
+
+-   ZIP (`.zip`)
+-   TAR (`.tar`)
+-   TAR gzip (`.tar.gz`, `.tgz`)
+-   TAR bzip2 (`.tar.bz2`, `.tbz2`)
+-   Disk Images (`.dmg`, `.iso`, `.cdr`), macOS only as it uses `hdiutil`
+
+A plain directory can also be opened as an archive.
 
 
 # Usage
