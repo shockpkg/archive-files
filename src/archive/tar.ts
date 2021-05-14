@@ -15,7 +15,6 @@ import {
 	Entry,
 	IEntryInfo
 } from '../archive';
-import {property} from '../decorators';
 import {
 	PathType
 } from '../types';
@@ -174,7 +173,6 @@ export class EntryTar extends Entry {
 	/**
 	 * Read rsrc.
 	 */
-	@property(false)
 	protected readonly _readRsrc: null = null;
 
 	constructor(info: Readonly<IEntryInfoTar>) {

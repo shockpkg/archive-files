@@ -8,7 +8,6 @@ import {Readable} from 'stream';
 
 import fse from 'fs-extra';
 
-import {property} from './decorators';
 import {
 	PathType
 } from './types';
@@ -240,37 +239,31 @@ export abstract class Entry extends Object {
 	/**
 	 * Read data.
 	 */
-	@property(false)
 	protected readonly _readData: (() => Promise<Readable | null>) | null;
 
 	/**
 	 * Read rsrc.
 	 */
-	@property(false)
 	protected readonly _readRsrc: (() => Promise<Readable | null>) | null;
 
 	/**
 	 * Read symlink.
 	 */
-	@property(false)
 	protected readonly _readSymlink: (() => Promise<Buffer>) | null;
 
 	/**
 	 * Entry triggering.
 	 */
-	@property(false)
 	protected _triggering = false;
 
 	/**
 	 * Entry triggered.
 	 */
-	@property(false)
 	protected _triggered = false;
 
 	/**
 	 * Entry extracted.
 	 */
-	@property(false)
 	protected _extracted = false;
 
 	constructor(info: Readonly<IEntryInfo>) {
@@ -822,13 +815,11 @@ export abstract class Archive extends Object {
 	/**
 	 * Flag for currently reading.
 	 */
-	@property(false)
 	protected _reading = false;
 
 	/**
 	 * Map of entries to set attributes on after reading.
 	 */
-	@property(false)
 	protected _afterReadSetAttributes: (
 		Map<string, Readonly<IArchiveAfterReadSetAttributesEntry>> | null
 	) = null;
