@@ -3,7 +3,7 @@ import {platform as osPlatform} from 'os';
 import {join as pathJoin} from 'path';
 import {Readable} from 'stream';
 
-import {ensureDir as fseEnsureDir, remove as fseRemove} from 'fs-extra';
+import fse from 'fs-extra';
 
 import {Archive, Entry, IEntryInfo} from './archive';
 import {PathType} from './types';
@@ -212,8 +212,8 @@ export function testArchive(
 	}
 
 	beforeEach(async () => {
-		await fseRemove(specTmpPath);
-		await fseEnsureDir(specTmpPath);
+		await fse.remove(specTmpPath);
+		await fse.ensureDir(specTmpPath);
 
 		if (setup) {
 			await setup();
@@ -221,7 +221,7 @@ export function testArchive(
 	});
 
 	afterEach(async () => {
-		await fseRemove(specTmpPath);
+		await fse.remove(specTmpPath);
 	});
 
 	for (const path of paths) {
