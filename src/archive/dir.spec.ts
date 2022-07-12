@@ -1,9 +1,6 @@
 import {join as pathJoin} from 'path';
 
-import {
-	chmod as fseLchmod,
-	ensureDir as fseEnsureDir
-} from 'fs-extra';
+import {chmod as fseLchmod, ensureDir as fseEnsureDir} from 'fs-extra';
 
 import {
 	ArchiveTest,
@@ -21,33 +18,23 @@ describe('archive/dir', () => {
 			expect(ArchiveDir.FILE_EXTENSIONS).toBe(null);
 		});
 
-		testArchive(
-			ArchiveDir,
-			[
-				specTmpArchivePath
-			],
-			true,
-			async () => {
-				// Extract test archive for dummy contents.
-				const archive = new ArchiveTest('dummy.file');
-				await archive.read(async entry => {
-					if (!safeToExtract(entry)) {
-						return;
-					}
-					const dest = pathJoin(specTmpArchivePath, entry.path);
-					await entry.extract(dest);
+		testArchive(ArchiveDir, [specTmpArchivePath], true, async () => {
+			// Extract test archive for dummy contents.
+			const archive = new ArchiveTest('dummy.file');
+			await archive.read(async entry => {
+				if (!safeToExtract(entry)) {
+					return;
+				}
+				const dest = pathJoin(specTmpArchivePath, entry.path);
+				await entry.extract(dest);
 
-					if (platformIsWin) {
-						return;
-					}
-					const unreadable = pathJoin(
-						specTmpArchivePath,
-						'unreadable'
-					);
-					await fseEnsureDir(unreadable);
-					await fseLchmod(unreadable, 0);
-				});
-			}
-		);
+				if (platformIsWin) {
+					return;
+				}
+				const unreadable = pathJoin(specTmpArchivePath, 'unreadable');
+				await fseEnsureDir(unreadable);
+				await fseLchmod(unreadable, 0);
+			});
+		});
 	});
 });

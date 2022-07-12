@@ -1,9 +1,6 @@
 import {join as pathJoin} from 'path';
 
-import {
-	specFixturesPath,
-	testArchive
-} from '../archive.spec';
+import {specFixturesPath, testArchive} from '../archive.spec';
 
 import {ArchiveZip} from './zip';
 

@@ -1,17 +1,11 @@
 /* eslint-disable max-classes-per-file */
 
-import {promisify} from 'util';
+import {Readable} from 'stream';
 
 import yauzl from 'yauzl';
 
-import {
-	Archive,
-	Entry,
-	IEntryInfo
-} from '../archive';
-import {
-	PathType
-} from '../types';
+import {Archive, Entry, IEntryInfo} from '../archive';
+import {PathType} from '../types';
 import {
 	streamToBuffer,
 	streamToReadable,
@@ -20,35 +14,49 @@ import {
 	zipPathTypeFromEfaAndPath
 } from '../util';
 
-const yauzlOpenP = promisify(yauzl.open) as any as (
-	path: string,
-	options: yauzl.Options
-) => Promise<yauzl.ZipFile>;
-
-const yauzlEntryReadP = async (
-	zipfile: yauzl.ZipFile,
-	entry: yauzl.Entry
-) => {
+/**
+ * Read entry.
+ *
+ * @param zipfile Zipfile.
+ * @param entry Entry.
+ * @returns Readable stream.
+ */
+const yauzlEntryRead = async (zipfile: yauzl.ZipFile, entry: yauzl.Entry) => {
 	// If the entry is empty, just return an empty stream.
 	if (!entry.uncompressedSize) {
 		return null;
 	}
 
-	const openP = promisify(zipfile.openReadStream.bind(zipfile));
-	const opened = await openP(entry);
-	return streamToReadable(opened);
+	return streamToReadable(
+		await new Promise<Readable>((resolve, reject) => {
+			zipfile.openReadStream(entry, (err, stream) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(stream);
+			});
+		})
+	);
 };
 
-const yauzlEntryReadSymlinkP = async (
+/**
+ * Read entry as symlink.
+ *
+ * @param zipfile Zipfile.
+ * @param entry Entry.
+ * @returns Buffer.
+ */
+const yauzlEntryReadSymlink = async (
 	zipfile: yauzl.ZipFile,
 	entry: yauzl.Entry
 ) => {
-	const stream = await yauzlEntryReadP(zipfile, entry);
+	const stream = await yauzlEntryRead(zipfile, entry);
 	return stream ? streamToBuffer(stream, 'end') : Buffer.alloc(0);
 };
 
 export interface IZipEntryExtraField {
-
+	//
 	/**
 	 * Field ID.
 	 */
@@ -61,7 +69,7 @@ export interface IZipEntryExtraField {
 }
 
 export interface IEntryInfoZip extends IEntryInfo {
-
+	//
 	/**
 	 * Entry archive.
 	 */
@@ -169,9 +177,7 @@ export interface IEntryInfoZip extends IEntryInfo {
 }
 
 /**
- * EntryZip constructor.
- *
- * @param info Info object.
+ * EntryZip object.
  */
 export class EntryZip extends Entry {
 	/**
@@ -279,6 +285,11 @@ export class EntryZip extends Entry {
 	 */
 	protected readonly _readRsrc: null = null;
 
+	/**
+	 * EntryZip constructor.
+	 *
+	 * @param info Info object.
+	 */
 	constructor(info: Readonly<IEntryInfoZip>) {
 		super(info);
 
@@ -301,19 +312,20 @@ export class EntryZip extends Entry {
 }
 
 /**
- * ArchiveZip constructor.
- *
- * @param path File path.
+ * ArchiveZip object.
  */
 export class ArchiveZip extends Archive {
 	/**
 	 * List of file extensions, or null.
 	 * All subclasses should implement this property.
 	 */
-	public static readonly FILE_EXTENSIONS: string[] | null = [
-		'.zip'
-	];
+	public static readonly FILE_EXTENSIONS: string[] | null = ['.zip'];
 
+	/**
+	 * ArchiveZip constructor.
+	 *
+	 * @param path File path.
+	 */
 	constructor(path: string) {
 		super(path);
 	}
@@ -365,11 +377,23 @@ export class ArchiveZip extends Archive {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	protected async _read(
-		itter: (entry: EntryZip) => Promise<any>
-	) {
-		const zipfile = await yauzlOpenP(this.path, {lazyEntries: true});
+	protected async _read(itter: (entry: EntryZip) => Promise<any>) {
+		const zipfile = await new Promise<yauzl.ZipFile>((resolve, reject) => {
+			yauzl.open(this.path, {lazyEntries: true}, (err, zipfile) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+				resolve(zipfile);
+			});
+		});
 
+		/**
+		 * Each itterator.
+		 *
+		 * @param yentry Entry.
+		 * @returns Recursion hint.
+		 */
 		const each = async (yentry: yauzl.Entry) => {
 			const {
 				comment,
@@ -406,11 +430,15 @@ export class ArchiveZip extends Archive {
 			const isCompressed = yentry.isCompressed();
 			const isEncrypted = yentry.isEncrypted();
 
-			const readData = type === PathType.FILE ?
-				async () => yauzlEntryReadP(zipfile, yentry) : null;
+			const readData =
+				type === PathType.FILE
+					? async () => yauzlEntryRead(zipfile, yentry)
+					: null;
 
-			const readSymlink = type === PathType.SYMLINK ?
-				async () => yauzlEntryReadSymlinkP(zipfile, yentry) : null;
+			const readSymlink =
+				type === PathType.SYMLINK
+					? async () => yauzlEntryReadSymlink(zipfile, yentry)
+					: null;
 
 			const entry = new EntryZip({
 				archive: this,
@@ -440,6 +468,12 @@ export class ArchiveZip extends Archive {
 
 		await new Promise<void>((resolve, reject) => {
 			let error: Error | null = null;
+
+			/**
+			 * Next callback.
+			 *
+			 * @param err Error object or null.
+			 */
 			const next = (err: Error | null) => {
 				if (err) {
 					error = err;
@@ -449,23 +483,16 @@ export class ArchiveZip extends Archive {
 				zipfile.readEntry();
 			};
 			zipfile.on('error', next);
-			zipfile.on('entry', async (entry: yauzl.Entry) => {
-				let done = false;
-				try {
-					done = await each(entry);
-				}
-				catch (err) {
-					next(err);
-					return;
-				}
-
-				if (done) {
-					zipfile.close();
-				}
-				else {
-					next(null);
-					return;
-				}
+			zipfile.on('entry', (entry: yauzl.Entry) => {
+				each(entry)
+					.then(done => {
+						if (!done) {
+							next(null);
+							return;
+						}
+						zipfile.close();
+					})
+					.catch(next);
 			});
 			zipfile.on('close', () => {
 				if (error) {

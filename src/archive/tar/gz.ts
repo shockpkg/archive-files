@@ -1,17 +1,11 @@
 /* eslint-disable max-classes-per-file */
 
-import {
-	createGunzip
-} from 'zlib';
+import {createGunzip} from 'zlib';
 
-import {
-	ArchiveTar,
-	EntryTar,
-	IEntryInfoTar
-} from '../tar';
+import {ArchiveTar, EntryTar, IEntryInfoTar} from '../tar';
 
 export interface IEntryInfoTarGz extends IEntryInfoTar {
-
+	//
 	/**
 	 * Entry archive.
 	 */
@@ -19,9 +13,7 @@ export interface IEntryInfoTarGz extends IEntryInfoTar {
 }
 
 /**
- * EntryTarGz constructor.
- *
- * @param info Info object.
+ * EntryTarGz object.
  */
 export class EntryTarGz extends EntryTar {
 	/**
@@ -29,6 +21,11 @@ export class EntryTarGz extends EntryTar {
 	 */
 	public readonly archive: ArchiveTarGz;
 
+	/**
+	 * EntryTarGz constructor.
+	 *
+	 * @param info Info object.
+	 */
 	constructor(info: Readonly<IEntryInfoTarGz>) {
 		super(info);
 
@@ -37,9 +34,7 @@ export class EntryTarGz extends EntryTar {
 }
 
 /**
- * ArchiveTarGz constructor.
- *
- * @param path File path.
+ * ArchiveTarGz object.
  */
 export class ArchiveTarGz extends ArchiveTar {
 	/**
@@ -56,6 +51,11 @@ export class ArchiveTarGz extends ArchiveTar {
 	 */
 	public readonly Entry = EntryTarGz;
 
+	/**
+	 * ArchiveTarGz constructor.
+	 *
+	 * @param path File path.
+	 */
 	constructor(path: string) {
 		super(path);
 	}
@@ -76,9 +76,7 @@ export class ArchiveTarGz extends ArchiveTar {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	protected async _read(
-		itter: (entry: EntryTarGz) => Promise<any>
-	) {
+	protected async _read(itter: (entry: EntryTarGz) => Promise<any>) {
 		await super._read(itter);
 	}
 

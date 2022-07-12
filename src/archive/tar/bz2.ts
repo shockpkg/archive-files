@@ -5,14 +5,10 @@ import {Transform} from 'stream';
 // @ts-ignore
 import unbzip2Stream from 'unbzip2-stream';
 
-import {
-	ArchiveTar,
-	EntryTar,
-	IEntryInfoTar
-} from '../tar';
+import {ArchiveTar, EntryTar, IEntryInfoTar} from '../tar';
 
 export interface IEntryInfoTarBz2 extends IEntryInfoTar {
-
+	//
 	/**
 	 * Entry archive.
 	 */
@@ -20,9 +16,7 @@ export interface IEntryInfoTarBz2 extends IEntryInfoTar {
 }
 
 /**
- * EntryTarBz2 constructor.
- *
- * @param info Info object.
+ * EntryTarBz2 object.
  */
 export class EntryTarBz2 extends EntryTar {
 	/**
@@ -30,6 +24,11 @@ export class EntryTarBz2 extends EntryTar {
 	 */
 	public readonly archive: ArchiveTarBz2;
 
+	/**
+	 * EntryTarBz2 constructor.
+	 *
+	 * @param info Info object.
+	 */
 	constructor(info: Readonly<IEntryInfoTarBz2>) {
 		super(info);
 
@@ -38,9 +37,7 @@ export class EntryTarBz2 extends EntryTar {
 }
 
 /**
- * ArchiveTarBz2 constructor.
- *
- * @param path File path.
+ * ArchiveTarBz2 object.
  */
 export class ArchiveTarBz2 extends ArchiveTar {
 	/**
@@ -57,6 +54,11 @@ export class ArchiveTarBz2 extends ArchiveTar {
 	 */
 	public readonly Entry = EntryTarBz2;
 
+	/**
+	 * ArchiveTarBz2 constructor.
+	 *
+	 * @param path File path.
+	 */
 	constructor(path: string) {
 		super(path);
 	}
@@ -77,9 +79,7 @@ export class ArchiveTarBz2 extends ArchiveTar {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	protected async _read(
-		itter: (entry: EntryTarBz2) => Promise<any>
-	) {
+	protected async _read(itter: (entry: EntryTarBz2) => Promise<any>) {
 		await super._read(itter);
 	}
 
@@ -89,7 +89,6 @@ export class ArchiveTarBz2 extends ArchiveTar {
 	 * @returns List of decompression transforms.
 	 */
 	protected _decompressionTransforms() {
-		const stream = unbzip2Stream() as Transform;
-		return [stream];
+		return [(unbzip2Stream as () => Transform)()];
 	}
 }

@@ -1,6 +1,4 @@
-import {
-	createArchiveByFileExtension
-} from './create';
+import {createArchiveByFileExtension} from './create';
 
 describe('create', () => {
 	describe('createArchiveByFileExtension', () => {

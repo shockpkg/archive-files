@@ -1,22 +1,13 @@
 /* eslint-disable max-classes-per-file */
 
-import {
-	Readable,
-	Transform
-} from 'stream';
+import {Readable, Transform} from 'stream';
 
 import fse from 'fs-extra';
 import itPipe from 'it-pipe';
 import itTar from 'it-tar';
 
-import {
-	Archive,
-	Entry,
-	IEntryInfo
-} from '../archive';
-import {
-	PathType
-} from '../types';
+import {Archive, Entry, IEntryInfo} from '../archive';
+import {PathType} from '../types';
 import {
 	defaultNull,
 	errorInternal,
@@ -24,24 +15,46 @@ import {
 	streamToReadable
 } from '../util';
 
-// Create stream from a BufferList generator.
+/**
+ * Create stream from a BufferList generator.
+ *
+ * @param gen BufferList generator.
+ * @returns Readable stream.
+ */
 const streamFromBufferListGenerator = (gen: AsyncGenerator) => {
 	const r = new Readable({
+		/**
+		 * Read method.
+		 */
 		read: () => {
-			gen.next()
-				.then(({done, value}) => {
+			gen.next().then(
+				({done, value}) => {
 					r.push(done ? null : (value as Buffer[]).slice());
 				},
 				err => {
 					r.emit('error', err);
-				});
+				}
+			);
 		}
 	});
 	return r;
 };
 
-export interface IEntryInfoTar extends IEntryInfo {
+interface IHeader {
+	type: string;
+	name: string;
+	size: number;
+	mode: number;
+	uid: number;
+	gid: number;
+	mtime: Date;
+	uname: string;
+	gname: string;
+	linkname: string | undefined;
+}
 
+export interface IEntryInfoTar extends IEntryInfo {
+	//
 	/**
 	 * Entry archive.
 	 */
@@ -109,9 +122,7 @@ export interface IEntryInfoTar extends IEntryInfo {
 }
 
 /**
- * EntryTar constructor.
- *
- * @param info Info object.
+ * EntryTar object.
  */
 export class EntryTar extends Entry {
 	/**
@@ -174,6 +185,11 @@ export class EntryTar extends Entry {
 	 */
 	protected readonly _readRsrc: null = null;
 
+	/**
+	 * EntryTar constructor.
+	 *
+	 * @param info Info object.
+	 */
 	constructor(info: Readonly<IEntryInfoTar>) {
 		super(info);
 
@@ -190,24 +206,25 @@ export class EntryTar extends Entry {
 }
 
 /**
- * ArchiveTar constructor.
- *
- * @param path File path.
+ * ArchiveTar object.
  */
 export class ArchiveTar extends Archive {
 	/**
 	 * List of file extensions, or null.
 	 * All subclasses should implement this property.
 	 */
-	public static readonly FILE_EXTENSIONS: string[] | null = [
-		'.tar'
-	];
+	public static readonly FILE_EXTENSIONS: string[] | null = ['.tar'];
 
 	/**
 	 * Entry constructor.
 	 */
 	public readonly Entry = EntryTar;
 
+	/**
+	 * ArchiveTar constructor.
+	 *
+	 * @param path File path.
+	 */
 	constructor(path: string) {
 		super(path);
 	}
@@ -228,13 +245,15 @@ export class ArchiveTar extends Archive {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	protected async _read(
-		itter: (entry: EntryTar) => Promise<any>
-	) {
-		const each = async (
-			header: any,
-			stream: () => Readable
-		) => {
+	protected async _read(itter: (entry: EntryTar) => Promise<any>) {
+		/**
+		 * Each itterator.
+		 *
+		 * @param header Entry header.
+		 * @param stream Entry stream.
+		 * @returns Recursion hint.
+		 */
+		const each = async (header: IHeader, stream: () => Readable) => {
 			// Check type, skip unsupported.
 			let type: PathType;
 			switch (header.type) {
@@ -256,24 +275,22 @@ export class ArchiveTar extends Archive {
 			}
 
 			// These values should always be set.
-			const pathRaw = header.name as string;
-			let size = header.size as number;
-			const mode = header.mode as number;
-			const uid = header.uid as number;
-			const gid = header.gid as number;
-			const mtime = header.mtime as Date;
-			const uname = header.uname as string;
-			const gname = header.gname as string;
+			const pathRaw = header.name;
+			let {size} = header;
+			const {mode, uid, gid, mtime, uname, gname} = header;
 
 			// Used for symbolic links, convert to a buffer.
 			const linkname = defaultNull(header.linkname);
-			const linknameBuffer = linkname === null ?
-				null : Buffer.from(linkname, 'utf8');
+			const linknameBuffer =
+				linkname === null ? null : Buffer.from(linkname, 'utf8');
 
-			const readData = type === PathType.FILE ?
-				async () => stream() : null;
-			const readSymlink = linknameBuffer ?
-				async () => linknameBuffer : null;
+			const readData =
+				// eslint-disable-next-line @typescript-eslint/require-await
+				type === PathType.FILE ? async () => stream() : null;
+			const readSymlink = linknameBuffer
+				? // eslint-disable-next-line @typescript-eslint/require-await
+				  async () => linknameBuffer
+				: null;
 
 			// If a symbolic link, make it the size of the link data, not 0.
 			if (type === PathType.SYMLINK) {
@@ -311,12 +328,19 @@ export class ArchiveTar extends Archive {
 		// Create the extract handlers.
 		let cancel = false;
 		const extract = itTar.extract();
-		const extracter = async (source: any) => {
+
+		/**
+		 * Extractor.
+		 *
+		 * @param source Source generator.
+		 */
+		const extracter = async (
+			source: AsyncGenerator<{header: IHeader; body: AsyncGenerator}>
+		) => {
 			for await (const {header, body} of source) {
 				// Call handler for each, break off on cancel.
-				cancel = await each(
-					header,
-					() => streamFromBufferListGenerator(body)
+				cancel = await each(header, () =>
+					streamFromBufferListGenerator(body)
 				);
 				if (cancel) {
 					return;
@@ -333,7 +357,9 @@ export class ArchiveTar extends Archive {
 		// If more than one stream, setup a pipeline.
 		if (streams.length > 1) {
 			const last = streams[streams.length - 1];
-			const piped = (streamPipeline as any)(...streams);
+			const piped = (
+				streamPipeline as (...streams: unknown[]) => Promise<void>
+			)(...streams);
 			await itPipe(streamToReadable(last), extract, extracter);
 
 			// On cancel, destroy pipeline, ignore any errors from doing that.
@@ -342,14 +368,12 @@ export class ArchiveTar extends Archive {
 			}
 			try {
 				await piped;
-			}
-			catch (err) {
+			} catch (err) {
 				if (!cancel) {
 					throw err;
 				}
 			}
-		}
-		else {
+		} else {
 			await itPipe(streams[0], extract, extracter);
 			if (cancel) {
 				streams[0].destroy();

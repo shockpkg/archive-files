@@ -6,7 +6,7 @@ import {ArchiveTarBz2} from './archive/tar/bz2';
 import {ArchiveTarGz} from './archive/tar/gz';
 import {ArchiveZip} from './archive/zip';
 
-const archives: (typeof Archive)[] = [
+const archives: typeof Archive[] = [
 	ArchiveDir,
 	ArchiveHdi,
 	ArchiveTar,
@@ -16,7 +16,7 @@ const archives: (typeof Archive)[] = [
 ];
 
 interface IArchiveExt {
-
+	//
 	/**
 	 * Archive constructor.
 	 */
@@ -72,7 +72,9 @@ export function createArchiveByFileExtension(path: string) {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	for (const {Archive, ext} of list) {
 		if (pathLower.endsWith(ext)) {
-			return new (Archive as any)(path) as Archive;
+			return new (Archive as unknown as new (path: string) => Archive)(
+				path
+			);
 		}
 	}
 	return null;

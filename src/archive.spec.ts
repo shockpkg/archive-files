@@ -1,24 +1,12 @@
-import {
-	platform as osPlatform
-} from 'os';
+/* eslint-disable max-classes-per-file */
+import {platform as osPlatform} from 'os';
 import {join as pathJoin} from 'path';
-import {
-	Readable
-} from 'stream';
+import {Readable} from 'stream';
 
-import {
-	ensureDir as fseEnsureDir,
-	remove as fseRemove
-} from 'fs-extra';
+import {ensureDir as fseEnsureDir, remove as fseRemove} from 'fs-extra';
 
-import {
-	Archive,
-	Entry,
-	IEntryInfo
-} from './archive';
-import {
-	PathType
-} from './types';
+import {Archive, Entry, IEntryInfo} from './archive';
+import {PathType} from './types';
 import {
 	fsLchmodSupported,
 	fsLstat,
@@ -44,25 +32,17 @@ export const mtimePrecisionMax = 2000;
 
 export const platform = osPlatform();
 export const platformIsMac = platform === 'darwin';
-export const platformIsWin = (
-	platform === 'win32' ||
-	(platform as string) === 'win64'
-);
+export const platformIsWin =
+	platform === 'win32' || (platform as string) === 'win64';
 
 export function safeToExtract(entry: Entry) {
 	// Only extract and test resource forks on MacOS.
-	if (
-		!platformIsMac &&
-		entry.type === PathType.RESOURCE_FORK
-	) {
+	if (!platformIsMac && entry.type === PathType.RESOURCE_FORK) {
 		return false;
 	}
 
 	// Symbolic links on Windows are funky.
-	if (
-		platformIsWin &&
-		entry.type === PathType.SYMLINK
-	) {
+	if (platformIsWin && entry.type === PathType.SYMLINK) {
 		return false;
 	}
 
@@ -84,6 +64,7 @@ const testEntries = [
 		type: PathType.FILE,
 		pathRaw: 'file.txt',
 		size: 8,
+		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('foo bar\n'))
 	},
 	{
@@ -93,16 +74,19 @@ const testEntries = [
 	{
 		type: PathType.SYMLINK,
 		pathRaw: 'symlink',
+		// eslint-disable-next-line @typescript-eslint/require-await
 		readSymlink: async () => Buffer.from('target')
 	},
 	{
 		type: PathType.FILE,
 		pathRaw: 'directory/subfile.txt',
+		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('sub file\n'))
 	},
 	{
 		type: PathType.FILE,
 		pathRaw: 'unknown/orphaned.txt',
+		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('sub file\n'))
 	},
 	{
@@ -111,9 +95,9 @@ const testEntries = [
 		mode: 0o644,
 		atime: new Date('2013-02-16'),
 		mtime: new Date('2014-03-24'),
-		readData: async () => bufferToStream(Buffer.from(
-			'#!/bin/sh\necho nonexecutable\n'
-		))
+		// eslint-disable-next-line @typescript-eslint/require-await
+		readData: async () =>
+			bufferToStream(Buffer.from('#!/bin/sh\necho nonexecutable\n'))
 	},
 	{
 		type: PathType.FILE,
@@ -121,9 +105,9 @@ const testEntries = [
 		mode: 0o755,
 		atime: new Date('2013-02-16'),
 		mtime: new Date('2014-03-24'),
-		readData: async () => bufferToStream(Buffer.from(
-			'#!/bin/sh\necho executable\n'
-		))
+		// eslint-disable-next-line @typescript-eslint/require-await
+		readData: async () =>
+			bufferToStream(Buffer.from('#!/bin/sh\necho executable\n'))
 	},
 	{
 		type: PathType.SYMLINK,
@@ -131,6 +115,7 @@ const testEntries = [
 		mode: 0o644,
 		atime: new Date('2013-02-16'),
 		mtime: new Date('2014-03-24'),
+		// eslint-disable-next-line @typescript-eslint/require-await
 		readSymlink: async () => Buffer.from('target')
 	},
 	{
@@ -139,6 +124,7 @@ const testEntries = [
 		mode: 0o755,
 		atime: new Date('2013-02-16'),
 		mtime: new Date('2014-03-24'),
+		// eslint-disable-next-line @typescript-eslint/require-await
 		readSymlink: async () => Buffer.from('target')
 	},
 	{
@@ -151,6 +137,7 @@ const testEntries = [
 	{
 		type: PathType.FILE,
 		pathRaw: 'dir-owner/sub.txt',
+		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('sub file\n'))
 	},
 	{
@@ -163,18 +150,21 @@ const testEntries = [
 	{
 		type: PathType.FILE,
 		pathRaw: 'dir-group/sub.txt',
+		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('sub file\n'))
 	},
 	{
 		type: PathType.FILE,
 		pathRaw: 'rsrc-content.bin',
 		size: 4,
+		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('data'))
 	},
 	{
 		type: PathType.RESOURCE_FORK,
 		pathRaw: 'rsrc-content.bin',
 		size: 9,
+		// eslint-disable-next-line @typescript-eslint/require-await
 		readRsrc: async () => bufferToStream(Buffer.from('rsrc fork'))
 	}
 ];
@@ -209,13 +199,13 @@ export class ArchiveTest extends Archive {
 }
 
 export function testArchive(
-	ArchiveConstructor: new(path: string) => Archive,
+	ArchiveConstructor: new (path: string) => Archive,
 	paths: string[] | null,
 	skippable: boolean,
 	setup: (() => Promise<any>) | null = null
 ) {
 	if (!paths) {
-		it('no supported paths', async () => {
+		it('no supported paths', () => {
 			expect(true).toBe(true);
 		});
 		return;
@@ -235,6 +225,7 @@ export function testArchive(
 	});
 
 	for (const path of paths) {
+		// eslint-disable-next-line no-loop-func
 		describe(path, () => {
 			describe('read', () => {
 				it('stream', async () => {
@@ -244,9 +235,9 @@ export function testArchive(
 						const {type, size} = entry;
 						const stream = await entry.stream();
 
-						const buffer = stream ?
-							await streamToBuffer(stream) :
-							null;
+						const buffer = stream
+							? await streamToBuffer(stream)
+							: null;
 
 						if (buffer) {
 							expect(type).not.toBe(PathType.DIRECTORY);
@@ -268,9 +259,9 @@ export function testArchive(
 						const {type, size} = entry;
 						const {stream, done} = await entry.read();
 
-						const buffer = stream ?
-							await streamToBuffer(stream) :
-							null;
+						const buffer = stream
+							? await streamToBuffer(stream)
+							: null;
 
 						if (buffer) {
 							expect(type).not.toBe(PathType.DIRECTORY);
@@ -278,8 +269,7 @@ export function testArchive(
 							if (size !== null) {
 								expect(buffer.length).toBe(size);
 							}
-						}
-						else {
+						} else {
 							expect(type).toBe(PathType.DIRECTORY);
 						}
 
@@ -313,23 +303,20 @@ export function testArchive(
 					const entries: Entry[] = [];
 					await archive.read(async entry => {
 						if (entry.hasNamedVolume) {
-							expect(entry.volumeName)
-								.toBe(entry.path.split('/')[0]);
-							expect(entry.volumePath)
-								.toBe(
-									entry.path
-										.split('/')
-										.slice(1)
-										.join('/')
-								);
-						}
-						else {
+							expect(entry.volumeName).toBe(
+								entry.path.split('/')[0]
+							);
+							expect(entry.volumePath).toBe(
+								entry.path.split('/').slice(1).join('/')
+							);
+						} else {
 							expect(entry.volumeName).toBe(null);
 							expect(entry.volumePath).toBe(entry.path);
 						}
 
 						expect(zipPathIsMacResource(entry.path))
-							.toBe(false, entry.path);
+							.withContext(entry.path)
+							.toBe(false);
 
 						if (!safeToExtract(entry)) {
 							return;
@@ -359,45 +346,38 @@ export function testArchive(
 								type === PathType.FILE ||
 								type === PathType.SYMLINK
 							) {
-								expect(stat.size).toBe(size, dest);
-							}
-							else if (type === PathType.RESOURCE_FORK) {
+								expect(stat.size).withContext(dest).toBe(size);
+							} else if (type === PathType.RESOURCE_FORK) {
 								const destRsrc = pathResourceFork(dest);
 								// eslint-disable-next-line no-await-in-loop
 								const statRsrc = await fsLstat(destRsrc);
-								expect(statRsrc.size).toBe(size, dest);
+								expect(statRsrc.size)
+									.withContext(dest)
+									.toBe(size);
 							}
 						}
 
 						if (
 							!disableMtimeTesting &&
 							setMtime &&
-							(
-								fsLutimesSupported ||
-								type !== PathType.SYMLINK
-							)
+							(fsLutimesSupported || type !== PathType.SYMLINK)
 						) {
 							const timeDiff = Math.abs(
 								stat.mtime.getTime() - setMtime.getTime()
 							);
-							expect(timeDiff).toBeLessThanOrEqual(
-								mtimePrecisionMax,
-								dest
-							);
+							expect(timeDiff)
+								.withContext(dest)
+								.toBeLessThanOrEqual(mtimePrecisionMax);
 						}
 
 						if (
-							(
-								!platformIsWin &&
-								mode !== null
-							) &&
-							(
-								fsLchmodSupported ||
-								type !== PathType.SYMLINK
-							)
+							!platformIsWin &&
+							mode !== null &&
+							(fsLchmodSupported || type !== PathType.SYMLINK)
 						) {
 							expect(modePermissionBits(stat.mode))
-								.toBe(modePermissionBits(mode), dest);
+								.withContext(dest)
+								.toBe(modePermissionBits(mode));
 						}
 					}
 				});
@@ -406,6 +386,7 @@ export function testArchive(
 					const archive = new ArchiveConstructor(path);
 
 					let count = 0;
+					// eslint-disable-next-line @typescript-eslint/require-await
 					await archive.read(async entry => {
 						count++;
 						return false;
@@ -419,6 +400,7 @@ export function testArchive(
 						const archive = new ArchiveConstructor(path);
 
 						const seen: string[] = [];
+						// eslint-disable-next-line @typescript-eslint/require-await
 						await archive.read(async entry => {
 							const {path} = entry;
 							for (const p of seen) {
@@ -442,12 +424,6 @@ export function testArchive(
 
 describe('archive', () => {
 	describe('Archive', () => {
-		testArchive(
-			ArchiveTest,
-			[
-				'dummy.file'
-			],
-			false
-		);
+		testArchive(ArchiveTest, ['dummy.file'], false);
 	});
 });

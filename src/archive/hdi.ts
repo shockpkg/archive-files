@@ -1,24 +1,13 @@
 /* eslint-disable max-classes-per-file */
 
-import {
-	Stats
-} from 'fs';
-import {
-	basename as pathBasename,
-	join as pathJoin
-} from 'path';
+import {Stats} from 'fs';
+import {basename as pathBasename, join as pathJoin} from 'path';
 
 import {Mounter} from '@shockpkg/hdi-mac';
 import fse from 'fs-extra';
 
-import {
-	Archive,
-	Entry,
-	IEntryInfo
-} from '../archive';
-import {
-	PathType
-} from '../types';
+import {Archive, Entry, IEntryInfo} from '../archive';
+import {PathType} from '../types';
 import {
 	fsLstatExists,
 	fsReadlinkRaw,
@@ -33,7 +22,7 @@ const walkOpts = {
 };
 
 export interface IEntryInfoHdi extends IEntryInfo {
-
+	//
 	/**
 	 * Entry archive.
 	 */
@@ -86,9 +75,7 @@ export interface IEntryInfoHdi extends IEntryInfo {
 }
 
 /**
- * EntryHdi constructor.
- *
- * @param info Info object.
+ * EntryHdi object.
  */
 export class EntryHdi extends Entry {
 	/**
@@ -141,6 +128,11 @@ export class EntryHdi extends Entry {
 	 */
 	public readonly mtime: Date;
 
+	/**
+	 * EntryHdi constructor.
+	 *
+	 * @param info Info object.
+	 */
 	constructor(info: Readonly<IEntryInfoHdi>) {
 		super(info);
 
@@ -173,9 +165,7 @@ export class EntryHdi extends Entry {
 }
 
 /**
- * ArchiveHdi constructor.
- *
- * @param path File path.
+ * ArchiveHdi object.
  */
 export class ArchiveHdi extends Archive {
 	/**
@@ -208,6 +198,11 @@ export class ArchiveHdi extends Archive {
 	 */
 	public nobrowse = false;
 
+	/**
+	 * ArchiveHdi constructor.
+	 *
+	 * @param path File path.
+	 */
 	constructor(path: string) {
 		super(path);
 	}
@@ -230,14 +225,16 @@ export class ArchiveHdi extends Archive {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	protected async _read(
-		itter: (entry: EntryHdi) => Promise<any>
-	) {
-		const each = async (
-			pathFull: string,
-			pathRaw: string,
-			stat: Stats
-		) => {
+	protected async _read(itter: (entry: EntryHdi) => Promise<any>) {
+		/**
+		 * Each itterator.
+		 *
+		 * @param pathFull Full path.
+		 * @param pathRaw Raw path.
+		 * @param stat Stat object.
+		 * @returns Recursion hint.
+		 */
+		const each = async (pathFull: string, pathRaw: string, stat: Stats) => {
 			const type = statToPathType(stat);
 			if (type === null) {
 				return true;
@@ -245,11 +242,17 @@ export class ArchiveHdi extends Archive {
 
 			const {size, mode, uid, gid, atime, mtime} = stat;
 
-			const readData = type === PathType.FILE ?
-				async () => fse.createReadStream(pathFull) : null;
+			const readData =
+				type === PathType.FILE
+					? // eslint-disable-next-line max-len
+					  // eslint-disable-next-line @typescript-eslint/require-await
+					  async () => fse.createReadStream(pathFull)
+					: null;
 
-			const readSymlink = type === PathType.SYMLINK ?
-				async () => fsReadlinkRaw(pathFull) : null;
+			const readSymlink =
+				type === PathType.SYMLINK
+					? async () => fsReadlinkRaw(pathFull)
+					: null;
 
 			const entry = new this.Entry({
 				archive: this,
@@ -280,8 +283,14 @@ export class ArchiveHdi extends Archive {
 				if (rsrcStat) {
 					const sizeRsrc = rsrcStat.size;
 
-					const readRsrc =
-						async () => fse.createReadStream(rsrcPathFull);
+					/**
+					 * Read RSRC.
+					 *
+					 * @returns Read stream.
+					 */
+					// eslint-disable-next-line @typescript-eslint/require-await
+					const readRsrc = async () =>
+						fse.createReadStream(rsrcPathFull);
 
 					const entryRsrc = new this.Entry({
 						archive: this,
@@ -332,15 +341,18 @@ export class ArchiveHdi extends Archive {
 
 				const volumeName = pathBasename(mountPoint);
 				// eslint-disable-next-line no-await-in-loop
-				await fsWalk(mountPoint, async (pathRel, stat) => {
-					const pathFull = pathJoin(mountPoint, pathRel);
-					const pathRaw = pathJoin(volumeName, pathRel);
-					const ret = await each(pathFull, pathRaw, stat);
-					return ret;
-				}, walkOpts);
+				await fsWalk(
+					mountPoint,
+					async (pathRel, stat) => {
+						const pathFull = pathJoin(mountPoint, pathRel);
+						const pathRaw = pathJoin(volumeName, pathRel);
+						const ret = await each(pathFull, pathRaw, stat);
+						return ret;
+					},
+					walkOpts
+				);
 			}
-		}
-		finally {
+		} finally {
 			await eject();
 		}
 	}

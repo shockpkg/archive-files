@@ -1,18 +1,13 @@
 import {join as pathJoin} from 'path';
-import {
-	pipeline,
-	Readable
-} from 'stream';
+import {pipeline, Readable} from 'stream';
 import {promisify} from 'util';
 
 import fse from 'fs-extra';
 
-import {
-	PathType
-} from './types';
+import {PathType} from './types';
 
 export interface IFsWalkOptions {
-
+	//
 	/**
 	 * Ignore unreadable directores when walking directory.
 	 *
@@ -21,7 +16,7 @@ export interface IFsWalkOptions {
 	ignoreUnreadableDirectories?: boolean;
 }
 
-const fseLchmod = fse.lchmod as any as (typeof fse.chmod | undefined);
+const fseLchmod = fse.lchmod as any as typeof fse.chmod | undefined;
 const fseConstants = fse.constants;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const {O_WRONLY} = fseConstants;
@@ -40,7 +35,7 @@ export function defaultValue<T, U>(
 	value: T,
 	defaultValue: U
 ): Exclude<T | U, undefined> {
-	// eslint-disable-next-line no-undefined
+	// eslint-disable-next-line no-undefined, @typescript-eslint/no-unsafe-return
 	return value === undefined ? defaultValue : (value as any);
 }
 
@@ -102,11 +97,9 @@ export function pathResourceFork(path: string) {
 export function statToPathType(stat: Readonly<fse.Stats>) {
 	if (stat.isSymbolicLink()) {
 		return PathType.SYMLINK;
-	}
-	else if (stat.isDirectory()) {
+	} else if (stat.isDirectory()) {
 		return PathType.DIRECTORY;
-	}
-	else if (stat.isFile()) {
+	} else if (stat.isFile()) {
 		return PathType.FILE;
 	}
 
@@ -143,7 +136,7 @@ export function modeToPathType(mode: number) {
  */
 export function modePermissionBits(mode: number) {
 	// eslint-disable-next-line no-bitwise
-	return (mode & 0b111111111);
+	return mode & 0b111111111;
 }
 
 /**
@@ -180,7 +173,7 @@ export function zipEfaToUnixMode(attrs: number) {
 
 	// Check if type bits are present, else no Unix info.
 	// eslint-disable-next-line no-bitwise
-	return ((mode >> 12) & 0b1111) ? mode : null;
+	return (mode >> 12) & 0b1111 ? mode : null;
 }
 
 /**
@@ -227,6 +220,12 @@ export async function streamToBuffer(
 	const buffer = await new Promise<Buffer>((resolve, reject) => {
 		const datas: Buffer[] = [];
 		let once = false;
+
+		/**
+		 * Done callback.
+		 *
+		 * @param err Error object or undefined.
+		 */
 		const done = (err?: Error) => {
 			if (once) {
 				return;
@@ -265,6 +264,12 @@ export async function streamReadEnd(
 ) {
 	await new Promise<void>((resolve, reject) => {
 		let once = false;
+
+		/**
+		 * Done callback.
+		 *
+		 * @param err Error object or undefined.
+		 */
 		const done = (err?: Error) => {
 			if (once) {
 				return;
@@ -298,6 +303,9 @@ export function streamToReadable(stream: Readable) {
 
 	// Create readable.
 	const r = new Readable({
+		/**
+		 * Read method.
+		 */
 		read: () => {
 			stream.resume();
 		}
@@ -409,8 +417,13 @@ export const fsLutimesSupported = !!(fseLchmod && O_SYMLINK !== null);
  * @returns Raw link.
  */
 export async function fsReadlinkRaw(path: string) {
-	const r = await (fse.readlink as any)(path, 'buffer');
-	return r as Buffer;
+	const r = await (
+		fse.readlink as unknown as (
+			path: string,
+			encoding: string
+		) => Promise<Buffer>
+	)(path, 'buffer');
+	return r;
 }
 
 /**
@@ -425,13 +438,14 @@ export async function fsSymlink(
 ) {
 	try {
 		await fse.symlink(target as string | Buffer, path as string | Buffer);
-	}
-	catch (err) {
+	} catch (err) {
 		// Workaround for issue in Node v14.5.0 on Windows.
-		if (err.name === 'TypeError' && typeof target !== 'string') {
+		if (
+			(err as {name: string}).name === 'TypeError' &&
+			typeof target !== 'string'
+		) {
 			await fse.symlink(target.toString(), path as string | Buffer);
-		}
-		else {
+		} else {
 			throw err;
 		}
 	}
@@ -477,13 +491,9 @@ export async function fsLstat(path: string) {
 export async function fsLstatExists(path: string) {
 	try {
 		return await fsLstat(path);
-	}
-	catch (err) {
-		const {code} = err;
-		if (
-			code === 'ENOENT' ||
-			code === 'ENOTDIR'
-		) {
+	} catch (err) {
+		const {code} = err as {code: string};
+		if (code === 'ENOENT' || code === 'ENOTDIR') {
 			return null;
 		}
 		throw err;
@@ -501,10 +511,7 @@ export async function fsLstatExists(path: string) {
  */
 export async function fsWalk(
 	base: string,
-	itter: (
-		path: string,
-		stat: fse.Stats
-	) => Promise<boolean | null | void>,
+	itter: (path: string, stat: fse.Stats) => Promise<boolean | null | void>,
 	options: Readonly<IFsWalkOptions> = {}
 ) {
 	const stack = (await fsReaddir(base)).reverse();
@@ -529,20 +536,18 @@ export async function fsWalk(
 		try {
 			// eslint-disable-next-line no-await-in-loop
 			subs = await fsReaddir(fullPath);
-		}
-		catch (err) {
+		} catch (err) {
 			if (
 				err &&
 				options.ignoreUnreadableDirectories &&
-				err.code === 'EACCES'
+				(err as {code: string}).code === 'EACCES'
 			) {
 				// Skip it.
-			}
-			else {
+			} else {
 				throw err;
 			}
 		}
-		for (let i = subs.length; i--;) {
+		for (let i = subs.length; i--; ) {
 			stack.push(pathJoin(entry, subs[i]));
 		}
 	}

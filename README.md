@@ -10,7 +10,6 @@ Package for reading different archive files in a consistent way.
 
 [![Build Status](https://github.com/shockpkg/archive-files/workflows/main/badge.svg?branch=master)](https://github.com/shockpkg/archive-files/actions?query=workflow%3Amain+branch%3Amaster)
 
-
 # Overview
 
 A consistent set of archive extractors, mainly those required to work with shockpkg packages, though other formats may be added.
@@ -26,7 +25,6 @@ Currently supported archive files:
 -   Disk Images (`.dmg`, `.iso`, `.cdr`), macOS only as it uses `hdiutil`
 
 A plain directory can also be opened as an archive.
-
 
 # Usage
 
@@ -68,11 +66,9 @@ main().catch(err => {
 });
 ```
 
-
 # Bugs
 
 If you find a bug or have compatibility issues, please open a ticket under issues section for this repository.
-
 
 # License
 

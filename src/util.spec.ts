@@ -1,10 +1,6 @@
 import fse from 'fs-extra';
 
-import {
-	fsLstatExists,
-	pathNormalize,
-	fsSymlink
-} from './util';
+import {fsLstatExists, pathNormalize, fsSymlink} from './util';
 
 describe('util', () => {
 	describe('pathNormalize', () => {
@@ -22,9 +18,7 @@ describe('util', () => {
 
 	describe('fsLstatExists', () => {
 		it('file', async () => {
-			const stat = await fsLstatExists(
-				'spec/this-file-does-not-exist'
-			);
+			const stat = await fsLstatExists('spec/this-file-does-not-exist');
 			expect(stat).toBeNull();
 		});
 		it('dir', async () => {
@@ -50,10 +44,7 @@ describe('util', () => {
 			await fse.remove('spec/tmp/symlinks');
 		});
 		it('string+string', async () => {
-			await fsSymlink(
-				'spec/tmp/symlinks/string-string',
-				'target'
-			);
+			await fsSymlink('spec/tmp/symlinks/string-string', 'target');
 		});
 		it('string+buffer', async () => {
 			await fsSymlink(

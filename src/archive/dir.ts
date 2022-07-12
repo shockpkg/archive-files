@@ -1,22 +1,12 @@
 /* eslint-disable max-classes-per-file */
 
-import {
-	Stats
-} from 'fs';
-import {
-	join as pathJoin
-} from 'path';
+import {Stats} from 'fs';
+import {join as pathJoin} from 'path';
 
 import fse from 'fs-extra';
 
-import {
-	Archive,
-	Entry,
-	IEntryInfo
-} from '../archive';
-import {
-	PathType
-} from '../types';
+import {Archive, Entry, IEntryInfo} from '../archive';
+import {PathType} from '../types';
 import {
 	fsLstatExists,
 	fsReadlinkRaw,
@@ -31,7 +21,7 @@ const walkOpts = {
 };
 
 export interface IEntryInfoDir extends IEntryInfo {
-
+	//
 	/**
 	 * Entry archive.
 	 */
@@ -84,9 +74,7 @@ export interface IEntryInfoDir extends IEntryInfo {
 }
 
 /**
- * EntryDir constructor.
- *
- * @param info Info object.
+ * EntryDir object.
  */
 export class EntryDir extends Entry {
 	/**
@@ -139,6 +127,11 @@ export class EntryDir extends Entry {
 	 */
 	public readonly mtime: Date;
 
+	/**
+	 * EntryDir constructor.
+	 *
+	 * @param info Info object.
+	 */
 	constructor(info: Readonly<IEntryInfoDir>) {
 		super(info);
 
@@ -171,9 +164,7 @@ export class EntryDir extends Entry {
 }
 
 /**
- * ArchiveDir constructor.
- *
- * @param path File path.
+ * ArchiveDir object.
  */
 export class ArchiveDir extends Archive {
 	/**
@@ -187,6 +178,11 @@ export class ArchiveDir extends Archive {
 	 */
 	public readonly Entry = EntryDir;
 
+	/**
+	 * ArchiveDir constructor.
+	 *
+	 * @param path File path.
+	 */
 	constructor(path: string) {
 		super(path);
 	}
@@ -209,14 +205,16 @@ export class ArchiveDir extends Archive {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	protected async _read(
-		itter: (entry: EntryDir) => Promise<any>
-	) {
-		const each = async (
-			pathFull: string,
-			pathRaw: string,
-			stat: Stats
-		) => {
+	protected async _read(itter: (entry: EntryDir) => Promise<any>) {
+		/**
+		 * Each itterator.
+		 *
+		 * @param pathFull Full path.
+		 * @param pathRaw Raw path.
+		 * @param stat Stat object.
+		 * @returns Recursion hint.
+		 */
+		const each = async (pathFull: string, pathRaw: string, stat: Stats) => {
 			const type = statToPathType(stat);
 			if (type === null) {
 				return true;
@@ -224,11 +222,17 @@ export class ArchiveDir extends Archive {
 
 			const {size, mode, uid, gid, atime, mtime} = stat;
 
-			const readData = type === PathType.FILE ?
-				async () => fse.createReadStream(pathFull) : null;
+			const readData =
+				type === PathType.FILE
+					? // eslint-disable-next-line max-len
+					  // eslint-disable-next-line @typescript-eslint/require-await
+					  async () => fse.createReadStream(pathFull)
+					: null;
 
-			const readSymlink = type === PathType.SYMLINK ?
-				async () => fsReadlinkRaw(pathFull) : null;
+			const readSymlink =
+				type === PathType.SYMLINK
+					? async () => fsReadlinkRaw(pathFull)
+					: null;
 
 			const entry = new this.Entry({
 				archive: this,
@@ -259,8 +263,14 @@ export class ArchiveDir extends Archive {
 				if (rsrcStat) {
 					const sizeRsrc = rsrcStat.size;
 
-					const readRsrc =
-						async () => fse.createReadStream(rsrcPathFull);
+					/**
+					 * Read RSRC.
+					 *
+					 * @returns Read stream.
+					 */
+					// eslint-disable-next-line @typescript-eslint/require-await
+					const readRsrc = async () =>
+						fse.createReadStream(rsrcPathFull);
 
 					const entryRsrc = new this.Entry({
 						archive: this,
@@ -289,10 +299,14 @@ export class ArchiveDir extends Archive {
 		};
 
 		const base = this.path;
-		await fsWalk(base, async (pathRel, stat) => {
-			const pathFull = pathJoin(base, pathRel);
-			const ret = await each(pathFull, pathRel, stat);
-			return ret;
-		}, walkOpts);
+		await fsWalk(
+			base,
+			async (pathRel, stat) => {
+				const pathFull = pathJoin(base, pathRel);
+				const ret = await each(pathFull, pathRel, stat);
+				return ret;
+			},
+			walkOpts
+		);
 	}
 }
