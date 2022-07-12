@@ -17,6 +17,10 @@ import {ArchiveDir} from './dir';
 
 describe('archive/dir', () => {
 	describe('ArchiveDir', () => {
+		it('file extensions', () => {
+			expect(ArchiveDir.FILE_EXTENSIONS).toBe(null);
+		});
+
 		testArchive(
 			ArchiveDir,
 			[

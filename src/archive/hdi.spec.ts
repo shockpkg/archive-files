@@ -10,6 +10,11 @@ import {ArchiveHdi} from './hdi';
 
 describe('archive/hdi', () => {
 	describe('ArchiveHdi', () => {
+		it('file extensions', () => {
+			expect(ArchiveHdi.FILE_EXTENSIONS)
+				.toEqual(['.dmg', '.iso', '.cdr']);
+		});
+
 		testArchive(
 			ArchiveHdi,
 			platformIsMac ? [

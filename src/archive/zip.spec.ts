@@ -9,6 +9,10 @@ import {ArchiveZip} from './zip';
 
 describe('archive/zip', () => {
 	describe('ArchiveZip', () => {
+		it('file extensions', () => {
+			expect(ArchiveZip.FILE_EXTENSIONS).toEqual(['.zip']);
+		});
+
 		testArchive(
 			ArchiveZip,
 			[

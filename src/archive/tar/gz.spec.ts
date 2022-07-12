@@ -9,6 +9,10 @@ import {ArchiveTarGz} from './gz';
 
 describe('archive/tar/gz', () => {
 	describe('ArchiveTarGz', () => {
+		it('file extensions', () => {
+			expect(ArchiveTarGz.FILE_EXTENSIONS).toEqual(['.tar.gz', '.tgz']);
+		});
+
 		testArchive(
 			ArchiveTarGz,
 			[

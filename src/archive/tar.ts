@@ -7,7 +7,6 @@ import {
 
 import fse from 'fs-extra';
 import itPipe from 'it-pipe';
-// @ts-ignore
 import itTar from 'it-tar';
 
 import {

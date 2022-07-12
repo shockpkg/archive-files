@@ -9,6 +9,10 @@ import {ArchiveTar} from './tar';
 
 describe('archive/tar', () => {
 	describe('ArchiveTar', () => {
+		it('file extensions', () => {
+			expect(ArchiveTar.FILE_EXTENSIONS).toEqual(['.tar']);
+		});
+
 		testArchive(
 			ArchiveTar,
 			[
