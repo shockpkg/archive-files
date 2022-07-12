@@ -31,7 +31,7 @@ const streamFromBufferListGenerator = (gen: AsyncGenerator) => {
 		read: () => {
 			gen.next()
 				.then(({done, value}) => {
-					r.push(done ? null : value.slice());
+					r.push(done ? null : (value as Buffer[]).slice());
 				},
 				err => {
 					r.emit('error', err);
