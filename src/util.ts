@@ -16,11 +16,10 @@ export interface IFsWalkOptions {
 	ignoreUnreadableDirectories?: boolean;
 }
 
-const fseLchmod = fse.lchmod as any as typeof fse.chmod | undefined;
 const fseConstants = fse.constants;
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const {O_WRONLY} = fseConstants;
-const O_SYMLINK = defaultNull(fseConstants.O_SYMLINK);
+const {O_WRONLY, O_SYMLINK} = fseConstants;
+export const fsLchmodSupported = !!O_SYMLINK;
+export const fsLutimesSupported = !!O_SYMLINK;
 
 export const streamPipeline = promisify(pipeline);
 
@@ -360,12 +359,19 @@ export async function streamToFile(
  * @param mode File mode.
  */
 export async function fsLchmod(path: string, mode: number) {
-	if (fseLchmod && O_SYMLINK !== null) {
-		await fseLchmod(path, mode);
+	// Skip if not supported.
+	if (!fsLchmodSupported) {
+		return;
+	}
+
+	// eslint-disable-next-line no-bitwise
+	const fd = await fse.open(path, O_WRONLY | O_SYMLINK);
+	try {
+		await fse.fchmod(fd, mode);
+	} finally {
+		await fse.close(fd);
 	}
 }
-
-export const fsLchmodSupported = !!(fseLchmod && O_SYMLINK !== null);
 
 /**
  * Wrapper for utimes.
@@ -394,21 +400,19 @@ export async function fsLutimes(
 	atime: Readonly<Date>,
 	mtime: Readonly<Date>
 ) {
-	// If lchmod is unsupported, lutimes should be also.
-	if (!(fseLchmod && O_SYMLINK !== null)) {
+	// Skip if not supported.
+	if (!fsLutimesSupported) {
 		return;
 	}
 
-	// Node does not currently implement lutimes.
-	// It can be done though the file descriptor.
-	// Essentially this is what the lchmod implementation does.
 	// eslint-disable-next-line no-bitwise
 	const fd = await fse.open(path, O_WRONLY | O_SYMLINK);
-	await fse.futimes(fd, atime as Date, mtime as Date);
-	await fse.close(fd);
+	try {
+		await fse.futimes(fd, atime as Date, mtime as Date);
+	} finally {
+		await fse.close(fd);
+	}
 }
-
-export const fsLutimesSupported = !!(fseLchmod && O_SYMLINK !== null);
 
 /**
  * A readlink wrapper that returns raw link buffer.
