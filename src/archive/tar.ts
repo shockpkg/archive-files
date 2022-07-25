@@ -3,7 +3,7 @@
 import {createReadStream} from 'fs';
 import {Readable} from 'stream';
 
-import itTar from 'it-tar';
+import {TarEntryHeader, extract} from 'it-tar';
 
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
@@ -19,7 +19,7 @@ interface IBufferList {
  * @param gen BufferList generator.
  * @returns Readable stream.
  */
-const streamFromBufferListGenerator = (gen: AsyncGenerator) => {
+const streamFromBufferListGenerator = (gen: AsyncGenerator<IBufferList>) => {
 	const r = new Readable({
 		/**
 		 * Read method.
@@ -27,7 +27,7 @@ const streamFromBufferListGenerator = (gen: AsyncGenerator) => {
 		read: () => {
 			gen.next().then(
 				({done, value}) => {
-					r.push(done ? null : (value as IBufferList).slice());
+					r.push(done ? null : value.slice());
 				},
 				err => {
 					r.emit('error', err);
@@ -37,19 +37,6 @@ const streamFromBufferListGenerator = (gen: AsyncGenerator) => {
 	});
 	return r;
 };
-
-interface IHeader {
-	type: string;
-	name: string;
-	size: number;
-	mode: number;
-	uid: number;
-	gid: number;
-	mtime: Date;
-	uname: string;
-	gname: string;
-	linkname: string | undefined;
-}
 
 export interface IEntryInfoTar extends IEntryInfo {
 	//
@@ -251,7 +238,7 @@ export class ArchiveTar extends Archive {
 		 * @param stream Entry stream.
 		 * @returns Recursion hint.
 		 */
-		const each = async (header: IHeader, stream: () => Readable) => {
+		const each = async (header: TarEntryHeader, stream: () => Readable) => {
 			// Check type, skip unsupported.
 			let type: PathType;
 			switch (header.type) {
@@ -319,12 +306,16 @@ export class ArchiveTar extends Archive {
 
 		let cancel = false;
 		const input = createReadStream(this.path);
-		for await (const {header, body} of itTar.extract()(
+		for await (const {header, body} of extract()(
 			this._decompress(input as unknown as AsyncGenerator<Buffer>)
 		)) {
+			const b = body as AsyncGenerator<IBufferList>;
+
 			// Call handler for each, break off on cancel.
-			cancel = await each(header as IHeader, () =>
-				streamFromBufferListGenerator(body as AsyncGenerator)
+			cancel = await each(header, () =>
+				streamFromBufferListGenerator(
+					body as AsyncGenerator<IBufferList>
+				)
 			);
 			if (cancel) {
 				break;
@@ -332,7 +323,7 @@ export class ArchiveTar extends Archive {
 
 			// Finish reading the body if not read, get to the next entry.
 			// eslint-disable-next-line no-await-in-loop
-			while (!(await (body as AsyncGenerator).next()).done) {
+			while (!(await b.next()).done) {
 				// Do nothing.
 			}
 		}
