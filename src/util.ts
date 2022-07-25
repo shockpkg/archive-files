@@ -389,7 +389,7 @@ export async function fsUtimes(
 	atime: Readonly<Date>,
 	mtime: Readonly<Date>
 ) {
-	await utimes(path, atime as Date, mtime as Date);
+	await utimes(path, atime, mtime);
 }
 
 /**
@@ -425,8 +425,7 @@ export async function fsLutimes(
  * @returns Raw link.
  */
 export async function fsReadlinkRaw(path: string) {
-	const r = await readlink(path, 'buffer');
-	return r;
+	return readlink(path, 'buffer');
 }
 
 /**
@@ -481,8 +480,7 @@ export async function fsReaddir(path: string) {
  * @returns Stat object.
  */
 export async function fsLstat(path: string) {
-	const r = await lstat(path);
-	return r;
+	return lstat(path);
 }
 
 /**
