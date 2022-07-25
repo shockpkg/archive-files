@@ -1,8 +1,5 @@
 /* eslint-disable max-classes-per-file */
 
-import {Transform} from 'stream';
-
-// @ts-ignore
 import unbzip2Stream from 'unbzip2-stream';
 
 import {ArchiveTar, EntryTar, IEntryInfoTar} from '../tar';
@@ -84,11 +81,47 @@ export class ArchiveTarBz2 extends ArchiveTar {
 	}
 
 	/**
-	 * Get decompression transform streams.
-	 *
-	 * @returns List of decompression transforms.
+	 * @inheritDoc
 	 */
-	protected _decompressionTransforms() {
-		return [(unbzip2Stream as () => Transform)()];
+	protected async *_decompress(input: AsyncGenerator<Buffer>) {
+		// This stream has no callbacks for write.
+		const bz = unbzip2Stream();
+		const datas: Buffer[] = [];
+		let error: Error | null = null;
+		bz.on('data', (data: Buffer) => {
+			datas.push(data);
+		});
+		bz.on('error', err => {
+			error = err;
+		});
+		for await (const chunk of input) {
+			if (error) {
+				throw error;
+			}
+			while (datas.length) {
+				yield datas.shift() as Buffer;
+			}
+			bz.write(chunk);
+			if (error) {
+				throw error;
+			}
+			while (datas.length) {
+				yield datas.shift() as Buffer;
+			}
+		}
+		if (error) {
+			throw error;
+		}
+		while (datas.length) {
+			yield datas.shift() as Buffer;
+		}
+		await new Promise<void>((resolve, reject) => {
+			bz.once('end', resolve);
+			bz.once('error', reject);
+			bz.end();
+		});
+		while (datas.length) {
+			yield datas.shift() as Buffer;
+		}
 	}
 }

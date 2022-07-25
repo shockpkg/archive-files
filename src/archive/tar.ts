@@ -1,17 +1,13 @@
 /* eslint-disable max-classes-per-file */
 
 import {createReadStream} from 'fs';
-import {Readable, Transform, pipeline} from 'stream';
-import {promisify} from 'util';
+import {Readable} from 'stream';
 
-import itPipe from 'it-pipe';
 import itTar from 'it-tar';
 
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
-import {defaultNull, streamToReadable} from '../util';
-
-const pipe = promisify(pipeline);
+import {defaultNull} from '../util';
 
 /**
  * Create stream from a BufferList generator.
@@ -317,74 +313,41 @@ export class ArchiveTar extends Archive {
 			return ret === false;
 		};
 
-		// List all the pipes.
-		const streams = [
-			createReadStream(this.path),
-			...this._decompressionTransforms()
-		];
-
-		// Create the extract handlers.
 		let cancel = false;
-		const extract = itTar.extract();
-
-		/**
-		 * Extractor.
-		 *
-		 * @param source Source generator.
-		 */
-		const extracter = async (
-			source: AsyncGenerator<{header: IHeader; body: AsyncGenerator}>
-		) => {
-			for await (const {header, body} of source) {
-				// Call handler for each, break off on cancel.
-				cancel = await each(header, () =>
-					streamFromBufferListGenerator(body)
-				);
-				if (cancel) {
-					return;
-				}
-
-				// Finish reading the body if not read.
-				// eslint-disable-next-line no-await-in-loop
-				while (!(await body.next()).done) {
-					// Do nothing.
-				}
-			}
-		};
-
-		// If more than one stream, setup a pipeline.
-		if (streams.length > 1) {
-			const last = streams[streams.length - 1];
-			const piped = (pipe as (...streams: unknown[]) => Promise<void>)(
-				...streams
+		const input = createReadStream(this.path);
+		for await (const {header, body} of itTar.extract()(
+			this._decompress(input as unknown as AsyncGenerator<Buffer>)
+		)) {
+			// Call handler for each, break off on cancel.
+			cancel = await each(header as IHeader, () =>
+				streamFromBufferListGenerator(body as AsyncGenerator)
 			);
-			await itPipe(streamToReadable(last), extract, extracter);
+			if (cancel) {
+				break;
+			}
 
-			// On cancel, destroy pipeline, ignore any errors from doing that.
-			if (cancel) {
-				last.destroy();
+			// Finish reading the body if not read, get to the next entry.
+			// eslint-disable-next-line no-await-in-loop
+			while (!(await (body as AsyncGenerator).next()).done) {
+				// Do nothing.
 			}
-			try {
-				await piped;
-			} catch (err) {
-				if (!cancel) {
-					throw err;
-				}
-			}
-		} else {
-			await itPipe(streams[0], extract, extracter);
-			if (cancel) {
-				streams[0].destroy();
-			}
+		}
+
+		if (cancel) {
+			input.destroy();
 		}
 	}
 
 	/**
-	 * Get decompression transform streams.
+	 * A async buffer generator to decopress if needed.
 	 *
-	 * @returns List of decompression transforms.
+	 * @param input Buffer generator.
+	 * @yields Decopressed data.
 	 */
-	protected _decompressionTransforms(): Transform[] {
-		return [];
+	protected async *_decompress(input: AsyncGenerator<Buffer>) {
+		// Plain tar files are not compressed, just pass data through.
+		for await (const chunk of input) {
+			yield chunk;
+		}
 	}
 }
