@@ -1,10 +1,9 @@
 /* eslint-disable max-classes-per-file */
 
-import {Stats} from 'fs';
-import {basename as pathBasename, join as pathJoin} from 'path';
+import {Stats, createReadStream} from 'fs';
+import {basename, join as pathJoin} from 'path';
 
 import {Mounter} from '@shockpkg/hdi-mac';
-import fse from 'fs-extra';
 
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
@@ -246,7 +245,7 @@ export class ArchiveHdi extends Archive {
 				type === PathType.FILE
 					? // eslint-disable-next-line max-len
 					  // eslint-disable-next-line @typescript-eslint/require-await
-					  async () => fse.createReadStream(pathFull)
+					  async () => createReadStream(pathFull)
 					: null;
 
 			const readSymlink =
@@ -289,8 +288,7 @@ export class ArchiveHdi extends Archive {
 					 * @returns Read stream.
 					 */
 					// eslint-disable-next-line @typescript-eslint/require-await
-					const readRsrc = async () =>
-						fse.createReadStream(rsrcPathFull);
+					const readRsrc = async () => createReadStream(rsrcPathFull);
 
 					const entryRsrc = new this.Entry({
 						archive: this,
@@ -339,7 +337,7 @@ export class ArchiveHdi extends Archive {
 					continue;
 				}
 
-				const volumeName = pathBasename(mountPoint);
+				const volumeName = basename(mountPoint);
 				// eslint-disable-next-line no-await-in-loop
 				await fsWalk(
 					mountPoint,

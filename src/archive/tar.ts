@@ -1,8 +1,8 @@
 /* eslint-disable max-classes-per-file */
 
+import {createReadStream} from 'fs';
 import {Readable, Transform} from 'stream';
 
-import fse from 'fs-extra';
 import itPipe from 'it-pipe';
 import itTar from 'it-tar';
 
@@ -321,7 +321,7 @@ export class ArchiveTar extends Archive {
 
 		// List all the pipes.
 		const streams = [
-			fse.createReadStream(this.path),
+			createReadStream(this.path),
 			...this._decompressionTransforms()
 		];
 

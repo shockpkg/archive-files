@@ -1,6 +1,5 @@
+import {chmod, mkdir} from 'fs/promises';
 import {join as pathJoin} from 'path';
-
-import fse from 'fs-extra';
 
 import {
 	ArchiveTest,
@@ -32,8 +31,8 @@ describe('archive/dir', () => {
 					return;
 				}
 				const unreadable = pathJoin(specTmpArchivePath, 'unreadable');
-				await fse.ensureDir(unreadable);
-				await fse.chmod(unreadable, 0);
+				await mkdir(unreadable, {recursive: true});
+				await chmod(unreadable, 0);
 			});
 		});
 	});

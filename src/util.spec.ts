@@ -1,4 +1,4 @@
-import fse from 'fs-extra';
+import {mkdir, rm} from 'fs/promises';
 
 import {fsLstatExists, pathNormalize, fsSymlink} from './util';
 
@@ -37,11 +37,11 @@ describe('util', () => {
 
 	describe('fsSymlink', () => {
 		beforeAll(async () => {
-			await fse.remove('spec/tmp/symlinks');
-			await fse.ensureDir('spec/tmp/symlinks');
+			await rm('spec/tmp/symlinks', {recursive: true, force: true});
+			await mkdir('spec/tmp/symlinks', {recursive: true});
 		});
 		afterAll(async () => {
-			await fse.remove('spec/tmp/symlinks');
+			await rm('spec/tmp/symlinks', {recursive: true, force: true});
 		});
 		it('string+string', async () => {
 			await fsSymlink('spec/tmp/symlinks/string-string', 'target');

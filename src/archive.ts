@@ -1,9 +1,9 @@
 /* eslint-disable max-classes-per-file */
 
-import {dirname as pathDirname, resolve as pathResolve} from 'path';
+import {createWriteStream} from 'fs';
+import {mkdir, rm, writeFile} from 'fs/promises';
+import {dirname, resolve} from 'path';
 import {Readable} from 'stream';
-
-import fse from 'fs-extra';
 
 import {PathType} from './types';
 import {
@@ -537,17 +537,19 @@ export abstract class Entry extends Object {
 		if (stat) {
 			// If replacing, then remove, else throw.
 			if (replace) {
-				await fse.remove(path);
+				await rm(path, {recursive: true, force: true});
 			} else {
 				throw this._errorExtractPathExists(path);
 			}
+		} else {
+			await mkdir(dirname(path), {recursive: true});
 		}
 
 		// Write file.
-		await fse.outputFile(path, Buffer.alloc(0));
+		await writeFile(path, Buffer.alloc(0));
 		const stream = await reader();
 		if (stream) {
-			await streamToFile(stream, fse.createWriteStream(path));
+			await streamToFile(stream, createWriteStream(path));
 		}
 
 		// Set attributes.
@@ -605,9 +607,9 @@ export abstract class Entry extends Object {
 		// Write the resource fork.
 		const stream = await readRsrc();
 		if (stream) {
-			await streamToFile(stream, fse.createWriteStream(pathRsrc));
+			await streamToFile(stream, createWriteStream(pathRsrc));
 		} else {
-			await fse.writeFile(pathRsrc, Buffer.alloc(0));
+			await writeFile(pathRsrc, Buffer.alloc(0));
 		}
 
 		// Set attributes.
@@ -632,14 +634,14 @@ export abstract class Entry extends Object {
 			// If not directory, then remove and replace it, else throw.
 			if (!stat.isDirectory()) {
 				if (replace) {
-					await fse.remove(path);
-					await fse.ensureDir(path);
+					await rm(path, {recursive: true, force: true});
+					await mkdir(path, {recursive: true});
 				} else {
 					throw this._errorExtractPathExists(path);
 				}
 			}
 		} else {
-			await fse.ensureDir(path);
+			await mkdir(path, {recursive: true});
 		}
 
 		// Set directory attributes after any children are added.
@@ -669,21 +671,21 @@ export abstract class Entry extends Object {
 		if (stat) {
 			// If replacing, then remove, else throw.
 			if (replace) {
-				await fse.remove(path);
+				await rm(path, {recursive: true, force: true});
 			} else {
 				throw this._errorExtractPathExists(path);
 			}
+		} else {
+			// Ensure base directory exists.
+			await mkdir(dirname(path), {recursive: true});
 		}
-
-		// Ensure base directory exists.
-		await fse.ensureDir(pathDirname(path));
 
 		// Read target.
 		const target = await readSymlink();
 
 		// Create link, optionally as a file.
 		if (symlinkAsFile) {
-			await fse.writeFile(path, target);
+			await writeFile(path, target);
 		} else {
 			await fsSymlink(path, target);
 		}
@@ -869,7 +871,7 @@ export abstract class Archive extends Object {
 				'Archive after read callbacks can only be added while reading'
 			);
 		}
-		afters.set(pathResolve(path), {
+		afters.set(resolve(path), {
 			path,
 			entry,
 			options
@@ -888,7 +890,7 @@ export abstract class Archive extends Object {
 				'Archive after read callbacks can only be removed while reading'
 			);
 		}
-		afters.delete(pathResolve(path));
+		afters.delete(resolve(path));
 	}
 
 	/**

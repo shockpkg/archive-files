@@ -1,9 +1,7 @@
 /* eslint-disable max-classes-per-file */
 
-import {Stats} from 'fs';
+import {Stats, createReadStream} from 'fs';
 import {join as pathJoin} from 'path';
-
-import fse from 'fs-extra';
 
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
@@ -226,7 +224,7 @@ export class ArchiveDir extends Archive {
 				type === PathType.FILE
 					? // eslint-disable-next-line max-len
 					  // eslint-disable-next-line @typescript-eslint/require-await
-					  async () => fse.createReadStream(pathFull)
+					  async () => createReadStream(pathFull)
 					: null;
 
 			const readSymlink =
@@ -269,8 +267,7 @@ export class ArchiveDir extends Archive {
 					 * @returns Read stream.
 					 */
 					// eslint-disable-next-line @typescript-eslint/require-await
-					const readRsrc = async () =>
-						fse.createReadStream(rsrcPathFull);
+					const readRsrc = async () => createReadStream(rsrcPathFull);
 
 					const entryRsrc = new this.Entry({
 						archive: this,

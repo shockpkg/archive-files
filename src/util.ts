@@ -1,8 +1,16 @@
+import {Stats, WriteStream, constants as fsConstants} from 'fs';
+import {
+	chmod,
+	lstat,
+	open,
+	readdir,
+	readlink,
+	symlink,
+	utimes
+} from 'fs/promises';
 import {join as pathJoin} from 'path';
 import {pipeline, Readable} from 'stream';
 import {promisify} from 'util';
-
-import fse from 'fs-extra';
 
 import {PathType} from './types';
 
@@ -16,8 +24,7 @@ export interface IFsWalkOptions {
 	ignoreUnreadableDirectories?: boolean;
 }
 
-const fseConstants = fse.constants;
-const {O_WRONLY, O_SYMLINK} = fseConstants;
+const {O_WRONLY, O_SYMLINK} = fsConstants;
 export const fsLchmodSupported = !!O_SYMLINK;
 export const fsLutimesSupported = !!O_SYMLINK;
 
@@ -93,7 +100,7 @@ export function pathResourceFork(path: string) {
  * @param stat Stats object.
  * @returns Path type.
  */
-export function statToPathType(stat: Readonly<fse.Stats>) {
+export function statToPathType(stat: Readonly<Stats>) {
 	if (stat.isSymbolicLink()) {
 		return PathType.SYMLINK;
 	} else if (stat.isDirectory()) {
@@ -345,10 +352,7 @@ export function streamToReadable(stream: Readable) {
  * @param source Stream source.
  * @param destination File destination.
  */
-export async function streamToFile(
-	source: Readable,
-	destination: fse.WriteStream
-) {
+export async function streamToFile(source: Readable, destination: WriteStream) {
 	await streamPipeline(source, destination);
 }
 
@@ -365,11 +369,11 @@ export async function fsLchmod(path: string, mode: number) {
 	}
 
 	// eslint-disable-next-line no-bitwise
-	const fd = await fse.open(path, O_WRONLY | O_SYMLINK);
+	const fd = await open(path, O_WRONLY | O_SYMLINK);
 	try {
-		await fse.fchmod(fd, mode);
+		await fd.chmod(mode);
 	} finally {
-		await fse.close(fd);
+		await fd.close();
 	}
 }
 
@@ -385,7 +389,7 @@ export async function fsUtimes(
 	atime: Readonly<Date>,
 	mtime: Readonly<Date>
 ) {
-	await fse.utimes(path, atime as Date, mtime as Date);
+	await utimes(path, atime as Date, mtime as Date);
 }
 
 /**
@@ -406,11 +410,11 @@ export async function fsLutimes(
 	}
 
 	// eslint-disable-next-line no-bitwise
-	const fd = await fse.open(path, O_WRONLY | O_SYMLINK);
+	const fd = await open(path, O_WRONLY | O_SYMLINK);
 	try {
-		await fse.futimes(fd, atime as Date, mtime as Date);
+		await fd.utimes(atime, mtime);
 	} finally {
-		await fse.close(fd);
+		await fd.close();
 	}
 }
 
@@ -421,12 +425,7 @@ export async function fsLutimes(
  * @returns Raw link.
  */
 export async function fsReadlinkRaw(path: string) {
-	const r = await (
-		fse.readlink as unknown as (
-			path: string,
-			encoding: string
-		) => Promise<Buffer>
-	)(path, 'buffer');
+	const r = await readlink(path, 'buffer');
 	return r;
 }
 
@@ -441,14 +440,14 @@ export async function fsSymlink(
 	target: string | Readonly<Buffer>
 ) {
 	try {
-		await fse.symlink(target as string | Buffer, path as string | Buffer);
+		await symlink(target as string | Buffer, path as string | Buffer);
 	} catch (err) {
 		// Workaround for issue in Node v14.5.0 on Windows.
 		if (
 			(err as {name: string}).name === 'TypeError' &&
 			typeof target !== 'string'
 		) {
-			await fse.symlink(target.toString(), path as string | Buffer);
+			await symlink(target.toString(), path as string | Buffer);
 		} else {
 			throw err;
 		}
@@ -462,7 +461,7 @@ export async function fsSymlink(
  * @param mode File mode.
  */
 export async function fsChmod(path: string, mode: number) {
-	await fse.chmod(path, mode);
+	await chmod(path, mode);
 }
 
 /**
@@ -472,7 +471,7 @@ export async function fsChmod(path: string, mode: number) {
  * @returns Directory listing.
  */
 export async function fsReaddir(path: string) {
-	return (await fse.readdir(path)).sort();
+	return (await readdir(path)).sort();
 }
 
 /**
@@ -482,7 +481,7 @@ export async function fsReaddir(path: string) {
  * @returns Stat object.
  */
 export async function fsLstat(path: string) {
-	const r = await fse.lstat(path);
+	const r = await lstat(path);
 	return r;
 }
 
@@ -515,7 +514,7 @@ export async function fsLstatExists(path: string) {
  */
 export async function fsWalk(
 	base: string,
-	itter: (path: string, stat: fse.Stats) => Promise<boolean | null | void>,
+	itter: (path: string, stat: Stats) => Promise<boolean | null | void>,
 	options: Readonly<IFsWalkOptions> = {}
 ) {
 	const stack = (await fsReaddir(base)).reverse();

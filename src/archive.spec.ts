@@ -1,9 +1,8 @@
 /* eslint-disable max-classes-per-file */
+import {mkdir, rm} from 'fs/promises';
 import {platform as osPlatform} from 'os';
 import {join as pathJoin} from 'path';
 import {Readable} from 'stream';
-
-import fse from 'fs-extra';
 
 import {Archive, Entry, IEntryInfo} from './archive';
 import {PathType} from './types';
@@ -212,8 +211,8 @@ export function testArchive(
 	}
 
 	beforeEach(async () => {
-		await fse.remove(specTmpPath);
-		await fse.ensureDir(specTmpPath);
+		await rm(specTmpPath, {recursive: true, force: true});
+		await mkdir(specTmpPath, {recursive: true});
 
 		if (setup) {
 			await setup();
@@ -221,7 +220,7 @@ export function testArchive(
 	});
 
 	afterEach(async () => {
-		await fse.remove(specTmpPath);
+		await rm(specTmpPath, {recursive: true, force: true});
 	});
 
 	for (const path of paths) {
