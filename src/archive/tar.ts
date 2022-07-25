@@ -1,19 +1,17 @@
 /* eslint-disable max-classes-per-file */
 
 import {createReadStream} from 'fs';
-import {Readable, Transform} from 'stream';
+import {Readable, Transform, pipeline} from 'stream';
+import {promisify} from 'util';
 
 import itPipe from 'it-pipe';
 import itTar from 'it-tar';
 
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
-import {
-	defaultNull,
-	errorInternal,
-	streamPipeline,
-	streamToReadable
-} from '../util';
+import {defaultNull, streamToReadable} from '../util';
+
+const pipe = promisify(pipeline);
 
 /**
  * Create stream from a BufferList generator.
@@ -295,7 +293,7 @@ export class ArchiveTar extends Archive {
 			// If a symbolic link, make it the size of the link data, not 0.
 			if (type === PathType.SYMLINK) {
 				if (!linknameBuffer) {
-					throw errorInternal();
+					throw new Error('Internal error');
 				}
 				size = linknameBuffer.length;
 			}
@@ -357,9 +355,9 @@ export class ArchiveTar extends Archive {
 		// If more than one stream, setup a pipeline.
 		if (streams.length > 1) {
 			const last = streams[streams.length - 1];
-			const piped = (
-				streamPipeline as (...streams: unknown[]) => Promise<void>
-			)(...streams);
+			const piped = (pipe as (...streams: unknown[]) => Promise<void>)(
+				...streams
+			);
 			await itPipe(streamToReadable(last), extract, extracter);
 
 			// On cancel, destroy pipeline, ignore any errors from doing that.

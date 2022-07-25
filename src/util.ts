@@ -1,4 +1,4 @@
-import {Stats, WriteStream, constants as fsConstants} from 'fs';
+import {Stats, constants as fsConstants} from 'fs';
 import {
 	chmod,
 	lstat,
@@ -9,8 +9,7 @@ import {
 	utimes
 } from 'fs/promises';
 import {join as pathJoin} from 'path';
-import {pipeline, Readable} from 'stream';
-import {promisify} from 'util';
+import {Readable} from 'stream';
 
 import {PathType} from './types';
 
@@ -27,8 +26,6 @@ export interface IFsWalkOptions {
 const {O_WRONLY, O_SYMLINK} = fsConstants;
 export const fsLchmodSupported = !!O_SYMLINK;
 export const fsLutimesSupported = !!O_SYMLINK;
-
-export const streamPipeline = promisify(pipeline);
 
 /**
  * Default value if value is undefined.
@@ -53,25 +50,6 @@ export function defaultValue<T, U>(
  */
 export function defaultNull<T>(value: T) {
 	return defaultValue(value, null);
-}
-
-/**
- * Create internal error obeject.
- *
- * @returns Error object.
- */
-export function errorInternal() {
-	return new Error('Internal error');
-}
-
-/**
- * Create unsupported path type error object.
- *
- * @param type Path type.
- * @returns Error object.
- */
-export function errorUnsupportedPathType(type: PathType) {
-	return new Error(`Unsupported path type: ${type}`);
 }
 
 /**
@@ -344,16 +322,6 @@ export function streamToReadable(stream: Readable) {
 		stream.emit('error', err);
 	});
 	return r;
-}
-
-/**
- * Write stream source to file destination.
- *
- * @param source Stream source.
- * @param destination File destination.
- */
-export async function streamToFile(source: Readable, destination: WriteStream) {
-	await streamPipeline(source, destination);
 }
 
 /**

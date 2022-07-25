@@ -3,14 +3,15 @@
 import {createWriteStream} from 'fs';
 import {mkdir, rm, writeFile} from 'fs/promises';
 import {dirname, resolve} from 'path';
-import {Readable} from 'stream';
+import {Readable, pipeline} from 'stream';
+import {promisify} from 'util';
+
+const pipe = promisify(pipeline);
 
 import {PathType} from './types';
 import {
 	defaultNull,
 	defaultValue,
-	errorInternal,
-	errorUnsupportedPathType,
 	fsChmod,
 	fsLchmod,
 	fsLstatExists,
@@ -21,8 +22,7 @@ import {
 	pathNormalize,
 	pathResourceFork,
 	streamReadEnd,
-	streamToBuffer,
-	streamToFile
+	streamToBuffer
 } from './util';
 
 export interface IArchiveAfterReadSetAttributesEntry {
@@ -429,7 +429,7 @@ export abstract class Entry extends Object {
 				break;
 			}
 			default: {
-				throw errorUnsupportedPathType(type);
+				throw new Error(`Unsupported path type: ${type as string}`);
 			}
 		}
 
@@ -491,7 +491,8 @@ export abstract class Entry extends Object {
 	protected async _extract(path: string, options: Readonly<IExtractOptions>) {
 		this.archive.afterReadSetAttributesRemove(path);
 
-		switch (this.type) {
+		const {type} = this;
+		switch (type) {
 			case PathType.FILE: {
 				await this._extractFile(path, options);
 				break;
@@ -509,7 +510,7 @@ export abstract class Entry extends Object {
 				break;
 			}
 			default: {
-				throw errorUnsupportedPathType(this.type);
+				throw new Error(`Unsupported path type: ${type as string}`);
 			}
 		}
 	}
@@ -545,7 +546,7 @@ export abstract class Entry extends Object {
 		await writeFile(path, Buffer.alloc(0));
 		const stream = await reader();
 		if (stream) {
-			await streamToFile(stream, createWriteStream(path));
+			await pipe(stream, createWriteStream(path));
 		}
 
 		// Set attributes.
@@ -564,7 +565,7 @@ export abstract class Entry extends Object {
 	) {
 		const readData = this._readData;
 		if (!readData) {
-			throw errorInternal();
+			throw new Error('Internal error');
 		}
 
 		await this._extractStreamToFile(path, readData, options);
@@ -582,7 +583,7 @@ export abstract class Entry extends Object {
 	) {
 		const readRsrc = this._readRsrc;
 		if (!readRsrc) {
-			throw errorInternal();
+			throw new Error('Internal error');
 		}
 
 		// Optionally extract as a data file.
@@ -603,7 +604,7 @@ export abstract class Entry extends Object {
 		// Write the resource fork.
 		const stream = await readRsrc();
 		if (stream) {
-			await streamToFile(stream, createWriteStream(pathRsrc));
+			await pipe(stream, createWriteStream(pathRsrc));
 		} else {
 			await writeFile(pathRsrc, Buffer.alloc(0));
 		}
@@ -656,7 +657,7 @@ export abstract class Entry extends Object {
 	) {
 		const readSymlink = this._readSymlink;
 		if (!readSymlink) {
-			throw errorInternal();
+			throw new Error('Internal error');
 		}
 
 		const replace = defaultValue(options.replace, false);
@@ -696,7 +697,8 @@ export abstract class Entry extends Object {
 	 * @returns Readable stream.
 	 */
 	protected async _stream() {
-		switch (this.type) {
+		const {type} = this;
+		switch (type) {
 			case PathType.FILE: {
 				return this._streamFile();
 			}
@@ -710,7 +712,7 @@ export abstract class Entry extends Object {
 				return this._streamSymlink();
 			}
 			default: {
-				throw errorUnsupportedPathType(this.type);
+				throw new Error(`Unsupported path type: ${type as string}`);
 			}
 		}
 	}
@@ -723,7 +725,7 @@ export abstract class Entry extends Object {
 	protected async _streamFile() {
 		const readData = this._readData;
 		if (!readData) {
-			throw errorInternal();
+			throw new Error('Internal error');
 		}
 		return readData();
 	}
@@ -736,7 +738,7 @@ export abstract class Entry extends Object {
 	protected async _streamResourceFork() {
 		const readRsrc = this._readRsrc;
 		if (!readRsrc) {
-			throw errorInternal();
+			throw new Error('Internal error');
 		}
 		return readRsrc();
 	}
@@ -760,7 +762,7 @@ export abstract class Entry extends Object {
 	protected async _streamSymlink() {
 		const readSymlink = this._readSymlink;
 		if (!readSymlink) {
-			throw errorInternal();
+			throw new Error('Internal error');
 		}
 		const r = new Readable({
 			/**
@@ -934,7 +936,7 @@ export abstract class Archive extends Object {
 		for (const resolved of resolves) {
 			const ent = afters.get(resolved);
 			if (!ent) {
-				throw errorInternal();
+				throw new Error('Internal error');
 			}
 			const {entry, path, options} = ent;
 			// eslint-disable-next-line no-await-in-loop
