@@ -69,7 +69,6 @@ function archivesExtensions() {
 export function createArchiveByFileExtension(path: string) {
 	const pathLower = path.toLowerCase();
 	const list = archivesExtensions();
-	// eslint-disable-next-line @typescript-eslint/naming-convention
 	for (const {Archive, ext} of list) {
 		if (pathLower.endsWith(ext)) {
 			return new (Archive as unknown as new (path: string) => Archive)(

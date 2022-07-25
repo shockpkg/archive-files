@@ -377,11 +377,7 @@ export abstract class Entry extends Object {
 	 * @param itter Itterator function.
 	 * @returns Return value.
 	 */
-	public async trigger<
-		// eslint-disable-next-line space-before-function-paren
-		T,
-		U extends (entry: this) => Promise<T>
-	>(itter: U) {
+	public async trigger<T, U extends (entry: this) => Promise<T>>(itter: U) {
 		let r: T;
 		if (this._triggered) {
 			throw new Error('Archive entry already triggered');
