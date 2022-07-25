@@ -3,15 +3,41 @@
 import {createReadStream} from 'fs';
 import {Readable} from 'stream';
 
-import {TarEntryHeader, extract} from 'it-tar';
-
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
 import {defaultNull} from '../util';
 
+// Based on it-tar TarEntryHeader.
+interface IHeader {
+	name: string;
+	uid: number;
+	gid: number;
+	size: number;
+	mode: number;
+	mtime: Date;
+	type?: string;
+	typeflag?: number;
+	linkname?: string;
+	uname?: string;
+	gname?: string;
+}
+
 interface IBufferList {
 	slice: () => Buffer;
 }
+
+/**
+ * Load it-tar, even in CommonJS.
+ *
+ * @returns The it-tar module.
+ */
+const itTar = async () =>
+	import('it-tar' as string) as Promise<{
+		extract: () => (input: AsyncGenerator<Buffer>) => AsyncIterable<{
+			header: IHeader;
+			body: AsyncGenerator<IBufferList>;
+		}>;
+	}>;
 
 /**
  * Create stream from a BufferList generator.
@@ -78,12 +104,12 @@ export interface IEntryInfoTar extends IEntryInfo {
 	/**
 	 * Entry uname.
 	 */
-	uname: string;
+	uname?: string;
 
 	/**
 	 * Entry gname.
 	 */
-	gname: string;
+	gname?: string;
 
 	/**
 	 * Entry atime.
@@ -143,12 +169,12 @@ export class EntryTar extends Entry {
 	/**
 	 * Entry uname.
 	 */
-	public readonly uname: string;
+	public readonly uname: string | null;
 
 	/**
 	 * Entry gname.
 	 */
-	public readonly gname: string;
+	public readonly gname: string | null;
 
 	/**
 	 * Entry atime.
@@ -183,8 +209,8 @@ export class EntryTar extends Entry {
 		this.mode = info.mode;
 		this.uid = info.uid;
 		this.gid = info.gid;
-		this.uname = info.uname;
-		this.gname = info.gname;
+		this.uname = defaultNull(info.uname);
+		this.gname = defaultNull(info.gname);
 		this.mtime = info.mtime;
 		this.linkname = defaultNull(info.linkname);
 	}
@@ -238,7 +264,7 @@ export class ArchiveTar extends Archive {
 		 * @param stream Entry stream.
 		 * @returns Recursion hint.
 		 */
-		const each = async (header: TarEntryHeader, stream: () => Readable) => {
+		const each = async (header: IHeader, stream: () => Readable) => {
 			// Check type, skip unsupported.
 			let type: PathType;
 			switch (header.type) {
@@ -306,20 +332,21 @@ export class ArchiveTar extends Archive {
 
 		let cancel = false;
 		const input = createReadStream(this.path);
+		const {extract} = await itTar();
 		for await (const {header, body} of extract()(
 			this._decompress(input as unknown as AsyncGenerator<Buffer>)
 		)) {
-			const b = body as AsyncGenerator<IBufferList>;
-
 			// Call handler for each, break off on cancel.
-			cancel = await each(header, () => streamFromBufferListGenerator(b));
+			cancel = await each(header, () =>
+				streamFromBufferListGenerator(body)
+			);
 			if (cancel) {
 				break;
 			}
 
 			// Finish reading the body if not read, get to the next entry.
 			// eslint-disable-next-line no-await-in-loop
-			while (!(await b.next()).done) {
+			while (!(await body.next()).done) {
 				// Do nothing.
 			}
 		}
