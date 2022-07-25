@@ -84,15 +84,22 @@ export class ArchiveTarBz2 extends ArchiveTar {
 	 * @inheritDoc
 	 */
 	protected async *_decompress(input: AsyncGenerator<Buffer>) {
-		// This stream has no callbacks for write.
 		const bz = unbzip2Stream();
-		const datas: Buffer[] = [];
 		let error: Error | null = null;
+
+		/**
+		 * This stream has no callbacks for write, listen for error.
+		 *
+		 * @param err Stream error.
+		 */
+		const onError = (err: Error) => {
+			error = error || err;
+		};
+		bz.on('error', onError);
+
+		const datas: Buffer[] = [];
 		bz.on('data', (data: Buffer) => {
 			datas.push(data);
-		});
-		bz.on('error', err => {
-			error = err;
 		});
 		for await (const chunk of input) {
 			if (error) {
@@ -115,6 +122,7 @@ export class ArchiveTarBz2 extends ArchiveTar {
 		while (datas.length) {
 			yield datas.shift() as Buffer;
 		}
+		bz.off('error', onError);
 		await new Promise<void>((resolve, reject) => {
 			bz.once('end', resolve);
 			bz.once('error', reject);
