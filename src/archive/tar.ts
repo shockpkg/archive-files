@@ -9,6 +9,10 @@ import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
 import {defaultNull} from '../util';
 
+interface IBufferList {
+	slice: () => Buffer;
+}
+
 /**
  * Create stream from a BufferList generator.
  *
@@ -23,7 +27,7 @@ const streamFromBufferListGenerator = (gen: AsyncGenerator) => {
 		read: () => {
 			gen.next().then(
 				({done, value}) => {
-					r.push(done ? null : (value as Buffer[]).slice());
+					r.push(done ? null : (value as IBufferList).slice());
 				},
 				err => {
 					r.emit('error', err);
