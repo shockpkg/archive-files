@@ -312,11 +312,7 @@ export class ArchiveTar extends Archive {
 			const b = body as AsyncGenerator<IBufferList>;
 
 			// Call handler for each, break off on cancel.
-			cancel = await each(header, () =>
-				streamFromBufferListGenerator(
-					body as AsyncGenerator<IBufferList>
-				)
-			);
+			cancel = await each(header, () => streamFromBufferListGenerator(b));
 			if (cancel) {
 				break;
 			}
