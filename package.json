@@ -1,7 +1,7 @@
 {
 	"name": "@shockpkg/archive-files",
 	"description": "Package for reading different archive files in a consistent way",
-	"version": "2.0.0",
+	"version": "2.0.1",
 	"keywords": [
 		"shockpkg",
 		"package",
