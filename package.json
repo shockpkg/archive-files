@@ -97,7 +97,7 @@
 		"typescript": "^4.7.4"
 	},
 	"dependencies": {
-		"@shockpkg/hdi-mac": "^2.0.0",
+		"@shockpkg/hdi-mac": "^2.0.1",
 		"it-tar": "^5.0.0",
 		"unbzip2-stream": "^1.4.3",
 		"yauzl": "^2.10.0"
