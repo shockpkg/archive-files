@@ -163,7 +163,7 @@ export interface IEntryInfo {
 /**
  * Entry object.
  */
-export abstract class Entry extends Object {
+export abstract class Entry {
 	/**
 	 * Entry archive.
 	 */
@@ -265,8 +265,6 @@ export abstract class Entry extends Object {
 	 * @param info Info object.
 	 */
 	constructor(info: Readonly<IEntryInfo>) {
-		super();
-
 		this.archive = info.archive;
 		this.type = info.type;
 		this.pathRaw = info.pathRaw;
@@ -787,7 +785,7 @@ export abstract class Entry extends Object {
 /**
  * Archive object.
  */
-export abstract class Archive extends Object {
+export abstract class Archive {
 	/**
 	 * List of file extensions, or null.
 	 * All subclasses should implement this property.
@@ -828,8 +826,6 @@ export abstract class Archive extends Object {
 	 * @param path File path.
 	 */
 	constructor(path: string) {
-		super();
-
 		this.path = path;
 	}
 
