@@ -8,6 +8,7 @@ import {
 	specTmpArchivePath,
 	testArchive
 } from '../archive.spec';
+import {PathType} from '../types';
 
 import {ArchiveDir} from './dir';
 
@@ -41,19 +42,20 @@ describe('archive/dir', () => {
 				subpaths.push('symlink');
 			}
 			a.subpaths = subpaths;
-			const filePaths: string[] = [];
+
+			const filePaths: [string, PathType][] = [];
 			// eslint-disable-next-line @typescript-eslint/require-await
 			await a.read(async entry => {
-				filePaths.push(entry.path);
+				filePaths.push([entry.path, entry.type]);
 			});
 
-			const expected = [
-				'file.txt',
-				'directory',
-				pathJoin('directory', 'subfile.txt')
+			const expected: [string, PathType][] = [
+				['file.txt', PathType.FILE],
+				['directory', PathType.DIRECTORY],
+				['directory/subfile.txt', PathType.FILE]
 			];
 			if (!platformIsWin) {
-				expected.push('symlink');
+				expected.push(['symlink', PathType.SYMLINK]);
 			}
 			expect(filePaths).toEqual(expected);
 		});
