@@ -180,7 +180,7 @@ export class ArchiveDir extends Archive {
 	/**
 	 * Limit to directory reading to subpaths.
 	 */
-	public subpaths: string[] | null = null;
+	public subpaths: Readonly<string>[] | null = null;
 
 	/**
 	 * ArchiveDir constructor.

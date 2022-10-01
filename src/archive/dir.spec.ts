@@ -36,19 +36,26 @@ describe('archive/dir', () => {
 			});
 
 			const a = new ArchiveDir(specTmpArchivePath);
-			a.subpaths = ['file.txt', 'symlink', 'directory'];
+			const subpaths = ['file.txt', 'directory'];
+			if (!platformIsWin) {
+				subpaths.push('symlink');
+			}
+			a.subpaths = subpaths;
 			const filePaths: string[] = [];
 			// eslint-disable-next-line @typescript-eslint/require-await
 			await a.read(async entry => {
 				filePaths.push(entry.path);
 			});
 
-			expect(filePaths).toEqual([
+			const expected = [
 				'file.txt',
-				'symlink',
 				'directory',
 				pathJoin('directory', 'subfile.txt')
-			]);
+			];
+			if (!platformIsWin) {
+				expected.push('symlink');
+			}
+			expect(filePaths).toEqual(expected);
 		});
 	});
 });
