@@ -6,6 +6,7 @@ import {join as pathJoin} from 'path';
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
 import {
+	fsLstat,
 	fsLstatExists,
 	fsReadlinkRaw,
 	fsWalk,
@@ -177,6 +178,11 @@ export class ArchiveDir extends Archive {
 	public readonly Entry = EntryDir;
 
 	/**
+	 * Limit to directory reading to subpaths.
+	 */
+	public subpaths: string[] | null = null;
+
+	/**
 	 * ArchiveDir constructor.
 	 *
 	 * @param path File path.
@@ -295,13 +301,39 @@ export class ArchiveDir extends Archive {
 			return true;
 		};
 
-		const base = this.path;
+		const {path, subpaths} = this;
+		if (subpaths) {
+			for (const subpath of subpaths) {
+				// eslint-disable-next-line no-await-in-loop
+				const stat = await fsLstat(pathJoin(path, subpath));
+
+				// eslint-disable-next-line no-await-in-loop
+				await each(pathJoin(path, subpath), subpath, stat);
+
+				if (stat.isDirectory()) {
+					// eslint-disable-next-line no-await-in-loop
+					await fsWalk(
+						pathJoin(path, subpath),
+						async (pathRel, stat) => {
+							const pathFull = pathJoin(path, subpath, pathRel);
+							return each(
+								pathFull,
+								pathJoin(subpath, pathRel),
+								stat
+							);
+						},
+						walkOpts
+					);
+				}
+			}
+			return;
+		}
+
 		await fsWalk(
-			base,
+			path,
 			async (pathRel, stat) => {
-				const pathFull = pathJoin(base, pathRel);
-				const ret = await each(pathFull, pathRel, stat);
-				return ret;
+				const pathFull = pathJoin(path, pathRel);
+				return each(pathFull, pathRel, stat);
 			},
 			walkOpts
 		);

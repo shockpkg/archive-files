@@ -344,8 +344,7 @@ export class ArchiveHdi extends Archive {
 					async (pathRel, stat) => {
 						const pathFull = pathJoin(mountPoint, pathRel);
 						const pathRaw = pathJoin(volumeName, pathRel);
-						const ret = await each(pathFull, pathRaw, stat);
-						return ret;
+						return each(pathFull, pathRaw, stat);
 					},
 					walkOpts
 				);

@@ -34,6 +34,21 @@ describe('archive/dir', () => {
 				await mkdir(unreadable, {recursive: true});
 				await chmod(unreadable, 0);
 			});
+
+			const a = new ArchiveDir(specTmpArchivePath);
+			a.subpaths = ['file.txt', 'symlink', 'directory'];
+			const filePaths: string[] = [];
+			// eslint-disable-next-line @typescript-eslint/require-await
+			await a.read(async entry => {
+				filePaths.push(entry.path);
+			});
+
+			expect(filePaths).toEqual([
+				'file.txt',
+				'symlink',
+				'directory',
+				pathJoin('directory', 'subfile.txt')
+			]);
 		});
 	});
 });
