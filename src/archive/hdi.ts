@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 
-import {Stats, createReadStream} from 'fs';
-import {basename, join as pathJoin} from 'path';
+import {Stats, createReadStream} from 'node:fs';
+import {basename, join as pathJoin} from 'node:path';
 
 import {Mounter} from '@shockpkg/hdi-mac';
 

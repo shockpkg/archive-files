@@ -1,8 +1,11 @@
-/* eslint-disable max-classes-per-file */
-import {mkdir, rm} from 'fs/promises';
-import {platform as osPlatform} from 'os';
-import {join as pathJoin} from 'path';
-import {Readable} from 'stream';
+/* eslint-disable max-nested-callbacks, max-classes-per-file */
+
+import {describe, it} from 'node:test';
+import {ok, strictEqual, notStrictEqual} from 'node:assert';
+import {mkdir, rm} from 'node:fs/promises';
+import {platform as osPlatform} from 'node:os';
+import {join as pathJoin} from 'node:path';
+import {Readable} from 'node:stream';
 
 import {Archive, Entry, IEntryInfo} from './archive';
 import {PathType} from './types';
@@ -22,9 +25,10 @@ export const disableMtimeTesting =
 	// eslint-disable-next-line no-process-env
 	process.env.ARCHIVE_FILES_DISABLE_MTIME_TESTING === '1';
 
-export const specTmpPath = pathJoin('spec', 'tmp');
-export const specTmpArchivePath = pathJoin(specTmpPath, 'archive');
-export const specTmpExtractPath = pathJoin(specTmpPath, 'extract');
+export const specTmpPath = (
+	(i: number) => (s: string) =>
+		pathJoin('spec', 'tmp', s, `${i++}`)
+)(0);
 export const specFixturesPath = pathJoin('spec', 'fixtures');
 
 export const mtimePrecisionMax = 2000;
@@ -199,220 +203,235 @@ export class ArchiveTest extends Archive {
 
 export function testArchive(
 	ArchiveConstructor: new (path: string) => Archive,
-	paths: string[] | null,
+	paths: string[],
 	skippable: boolean,
-	setup: (() => Promise<any>) | null = null
+	setup: (path: string, tmpdir: string) => Promise<string> | string
 ) {
-	if (!paths) {
-		it('no supported paths', () => {
-			expect(true).toBe(true);
+	if (!paths.length) {
+		void it('no supported paths', () => {
+			strictEqual(true, true);
 		});
 		return;
 	}
 
-	beforeEach(async () => {
-		await rm(specTmpPath, {recursive: true, force: true});
-		await mkdir(specTmpPath, {recursive: true});
-
-		if (setup) {
-			await setup();
+	const withSetup = async (
+		path: string,
+		f: (path: string, tmpdir: string) => unknown
+	) => {
+		const tmpdir = specTmpPath(ArchiveConstructor.name);
+		await rm(tmpdir, {recursive: true, force: true});
+		await mkdir(tmpdir, {recursive: true});
+		try {
+			await f(await setup(path, tmpdir), tmpdir);
+		} finally {
+			await rm(tmpdir, {recursive: true, force: true});
 		}
-	});
-
-	afterEach(async () => {
-		await rm(specTmpPath, {recursive: true, force: true});
-	});
+	};
 
 	for (const path of paths) {
 		// eslint-disable-next-line no-loop-func
-		describe(path, () => {
-			describe('read', () => {
-				it('stream', async () => {
-					const archive = new ArchiveConstructor(path);
+		void describe(path, () => {
+			void describe('read', () => {
+				void it('stream', async () => {
+					await withSetup(path, async path => {
+						const archive = new ArchiveConstructor(path);
 
-					await archive.read(async entry => {
-						const {type, size} = entry;
-						const stream = await entry.stream();
+						await archive.read(async entry => {
+							const {type, size} = entry;
+							const stream = await entry.stream();
 
-						const buffer = stream
-							? await streamToBuffer(stream)
-							: null;
+							const buffer = stream
+								? await streamToBuffer(stream)
+								: null;
 
-						if (buffer) {
-							expect(type).not.toBe(PathType.DIRECTORY);
+							if (buffer) {
+								notStrictEqual(type, PathType.DIRECTORY);
 
-							if (size !== null) {
-								expect(buffer.length).toBe(size);
+								if (size !== null) {
+									strictEqual(buffer.length, size);
+								}
+								return;
 							}
-							return;
-						}
 
-						expect(type).toBe(PathType.DIRECTORY);
+							strictEqual(type, PathType.DIRECTORY);
+						});
 					});
 				});
 
-				it('read', async () => {
-					const archive = new ArchiveConstructor(path);
+				void it('read', async () => {
+					await withSetup(path, async path => {
+						const archive = new ArchiveConstructor(path);
 
-					await archive.read(async entry => {
-						const {type, size} = entry;
-						const {stream, done} = await entry.read();
+						await archive.read(async entry => {
+							const {type, size} = entry;
+							const {stream, done} = await entry.read();
 
-						const buffer = stream
-							? await streamToBuffer(stream)
-							: null;
+							const buffer = stream
+								? await streamToBuffer(stream)
+								: null;
 
-						if (buffer) {
-							expect(type).not.toBe(PathType.DIRECTORY);
+							if (buffer) {
+								notStrictEqual(type, PathType.DIRECTORY);
 
-							if (size !== null) {
-								expect(buffer.length).toBe(size);
+								if (size !== null) {
+									strictEqual(buffer.length, size);
+								}
+							} else {
+								strictEqual(type, PathType.DIRECTORY);
 							}
-						} else {
-							expect(type).toBe(PathType.DIRECTORY);
-						}
 
-						await done;
+							await done;
+						});
 					});
 				});
 
-				it('readBuffer', async () => {
-					const archive = new ArchiveConstructor(path);
+				void it('readBuffer', async () => {
+					await withSetup(path, async path => {
+						const archive = new ArchiveConstructor(path);
 
-					await archive.read(async entry => {
-						const {type, size} = entry;
-						const buffer = await entry.readBuffer();
+						await archive.read(async entry => {
+							const {type, size} = entry;
+							const buffer = await entry.readBuffer();
 
-						if (buffer) {
-							expect(type).not.toBe(PathType.DIRECTORY);
+							if (buffer) {
+								notStrictEqual(type, PathType.DIRECTORY);
 
-							if (size !== null) {
-								expect(buffer.length).toBe(size);
+								if (size !== null) {
+									strictEqual(buffer.length, size);
+								}
+								return;
 							}
-							return;
-						}
 
-						expect(type).toBe(PathType.DIRECTORY);
+							strictEqual(type, PathType.DIRECTORY);
+						});
 					});
 				});
 
-				it('extract', async () => {
-					const archive = new ArchiveConstructor(path);
+				void it('extract', async () => {
+					await withSetup(path, async (path, tmpdir) => {
+						const archive = new ArchiveConstructor(path);
+						const extractDir = pathJoin(tmpdir, 'extract');
 
-					const entries: Entry[] = [];
-					await archive.read(async entry => {
-						if (entry.hasNamedVolume) {
-							expect(entry.volumeName).toBe(
-								entry.path.split('/')[0]
+						const entries: Entry[] = [];
+						await archive.read(async entry => {
+							if (entry.hasNamedVolume) {
+								strictEqual(
+									entry.volumeName,
+									entry.path.split('/')[0]
+								);
+								strictEqual(
+									entry.volumePath,
+									entry.path.split('/').slice(1).join('/')
+								);
+							} else {
+								strictEqual(entry.volumeName, null);
+								strictEqual(entry.volumePath, entry.path);
+							}
+
+							strictEqual(
+								zipPathIsMacResource(entry.path),
+								false
 							);
-							expect(entry.volumePath).toBe(
-								entry.path.split('/').slice(1).join('/')
-							);
-						} else {
-							expect(entry.volumeName).toBe(null);
-							expect(entry.volumePath).toBe(entry.path);
-						}
 
-						expect(zipPathIsMacResource(entry.path))
-							.withContext(entry.path)
-							.toBe(false);
+							if (!safeToExtract(entry)) {
+								return;
+							}
 
-						if (!safeToExtract(entry)) {
-							return;
-						}
+							entries.push(entry);
+							const dest = pathJoin(extractDir, entry.path);
+							await entry.extract(dest);
+						});
 
-						entries.push(entry);
-						const dest = pathJoin(specTmpExtractPath, entry.path);
-						await entry.extract(dest);
-					});
+						ok(entries.length > 1);
 
-					expect(entries.length).toBeGreaterThan(1);
+						for (const entry of entries) {
+							const dest = pathJoin(extractDir, entry.path);
+							// eslint-disable-next-line no-await-in-loop
+							const stat = await fsLstat(dest);
 
-					for (const entry of entries) {
-						const dest = pathJoin(specTmpExtractPath, entry.path);
-						// eslint-disable-next-line no-await-in-loop
-						const stat = await fsLstat(dest);
+							const {type, size, mode, atime, mtime} = entry;
 
-						const {type, size, mode, atime, mtime} = entry;
+							// No good way to test atime.
+							// File indexing and AV scanning can change it.
+							// Just test mtime instead.
+							const setMtime = mtime || atime;
 
-						// No good way to test atime.
-						// File indexing and AV scanning can change it.
-						// Just test mtime instead.
-						const setMtime = mtime || atime;
+							if (size !== null) {
+								if (
+									type === PathType.FILE ||
+									type === PathType.SYMLINK
+								) {
+									strictEqual(stat.size, size);
+								} else if (type === PathType.RESOURCE_FORK) {
+									const destRsrc = pathResourceFork(dest);
+									// eslint-disable-next-line no-await-in-loop
+									const statRsrc = await fsLstat(destRsrc);
+									strictEqual(statRsrc.size, size);
+								}
+							}
 
-						if (size !== null) {
 							if (
-								type === PathType.FILE ||
-								type === PathType.SYMLINK
+								!disableMtimeTesting &&
+								setMtime &&
+								(fsLutimesSupported ||
+									type !== PathType.SYMLINK)
 							) {
-								expect(stat.size).withContext(dest).toBe(size);
-							} else if (type === PathType.RESOURCE_FORK) {
-								const destRsrc = pathResourceFork(dest);
-								// eslint-disable-next-line no-await-in-loop
-								const statRsrc = await fsLstat(destRsrc);
-								expect(statRsrc.size)
-									.withContext(dest)
-									.toBe(size);
+								const timeDiff = Math.abs(
+									stat.mtime.getTime() - setMtime.getTime()
+								);
+								ok(timeDiff <= mtimePrecisionMax);
+							}
+
+							if (
+								!platformIsWin &&
+								mode !== null &&
+								(fsLchmodSupported || type !== PathType.SYMLINK)
+							) {
+								strictEqual(
+									modePermissionBits(stat.mode),
+									modePermissionBits(mode)
+								);
 							}
 						}
-
-						if (
-							!disableMtimeTesting &&
-							setMtime &&
-							(fsLutimesSupported || type !== PathType.SYMLINK)
-						) {
-							const timeDiff = Math.abs(
-								stat.mtime.getTime() - setMtime.getTime()
-							);
-							expect(timeDiff)
-								.withContext(dest)
-								.toBeLessThanOrEqual(mtimePrecisionMax);
-						}
-
-						if (
-							!platformIsWin &&
-							mode !== null &&
-							(fsLchmodSupported || type !== PathType.SYMLINK)
-						) {
-							expect(modePermissionBits(stat.mode))
-								.withContext(dest)
-								.toBe(modePermissionBits(mode));
-						}
-					}
+					});
 				});
 
-				it('cancel', async () => {
-					const archive = new ArchiveConstructor(path);
+				void it('cancel', async () => {
+					await withSetup(path, async path => {
+						const archive = new ArchiveConstructor(path);
 
-					let count = 0;
-					// eslint-disable-next-line @typescript-eslint/require-await
-					await archive.read(async entry => {
-						count++;
-						return false;
+						let count = 0;
+						// eslint-disable-next-line @typescript-eslint/require-await
+						await archive.read(async entry => {
+							count++;
+							return false;
+						});
+
+						strictEqual(count, 1);
 					});
-
-					expect(count).toBe(1);
 				});
 
 				if (skippable) {
-					it('skip', async () => {
-						const archive = new ArchiveConstructor(path);
+					void it('skip', async () => {
+						await withSetup(path, async path => {
+							const archive = new ArchiveConstructor(path);
 
-						const seen: string[] = [];
-						// eslint-disable-next-line @typescript-eslint/require-await
-						await archive.read(async entry => {
-							const {path} = entry;
-							for (const p of seen) {
-								if (
-									path.startsWith(`${p}/`) ||
-									path.startsWith(`${p}\\`)
-								) {
-									throw new Error('Skip failed');
+							const seen: string[] = [];
+							// eslint-disable-next-line @typescript-eslint/require-await
+							await archive.read(async entry => {
+								const {path} = entry;
+								for (const p of seen) {
+									if (
+										path.startsWith(`${p}/`) ||
+										path.startsWith(`${p}\\`)
+									) {
+										throw new Error('Skip failed');
+									}
 								}
-							}
-							seen.push(path);
+								seen.push(path);
 
-							return null;
+								return null;
+							});
 						});
 					});
 				}
@@ -420,9 +439,3 @@ export function testArchive(
 		});
 	}
 }
-
-describe('archive', () => {
-	describe('Archive', () => {
-		testArchive(ArchiveTest, ['dummy.file'], false);
-	});
-});

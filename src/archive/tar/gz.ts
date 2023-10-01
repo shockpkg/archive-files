@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 
-import {createGunzip} from 'zlib';
+import {createGunzip} from 'node:zlib';
 
 import {ArchiveTar, EntryTar, IEntryInfoTar} from '../tar';
 

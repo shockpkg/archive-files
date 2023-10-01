@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 
-import {Readable} from 'stream';
+import {Readable} from 'node:stream';
 
 import yauzl from 'yauzl';
 

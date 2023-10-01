@@ -1,10 +1,10 @@
 /* eslint-disable max-classes-per-file */
 
-import {createWriteStream} from 'fs';
-import {mkdir, rm, writeFile} from 'fs/promises';
-import {dirname, resolve} from 'path';
-import {Readable, pipeline} from 'stream';
-import {promisify} from 'util';
+import {createWriteStream} from 'node:fs';
+import {mkdir, rm, writeFile} from 'node:fs/promises';
+import {dirname, resolve} from 'node:path';
+import {Readable, pipeline} from 'node:stream';
+import {promisify} from 'node:util';
 
 const pipe = promisify(pipeline);
 

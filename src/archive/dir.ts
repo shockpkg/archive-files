@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 
-import {Stats, createReadStream} from 'fs';
-import {join as pathJoin} from 'path';
+import {Stats, createReadStream} from 'node:fs';
+import {join as pathJoin} from 'node:path';
 
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';

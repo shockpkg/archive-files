@@ -1,4 +1,4 @@
-import {Stats, constants as fsConstants} from 'fs';
+import {Stats, constants as fsConstants} from 'node:fs';
 import {
 	chmod,
 	lstat,
@@ -7,9 +7,9 @@ import {
 	readlink,
 	symlink,
 	utimes
-} from 'fs/promises';
-import {join as pathJoin} from 'path';
-import {Readable} from 'stream';
+} from 'node:fs/promises';
+import {join as pathJoin} from 'node:path';
+import {Readable} from 'node:stream';
 
 import {PathType} from './types';
 

@@ -1,13 +1,15 @@
-import {join as pathJoin} from 'path';
+import {describe, it} from 'node:test';
+import {deepStrictEqual} from 'node:assert';
+import {join as pathJoin} from 'node:path';
 
 import {platformIsMac, specFixturesPath, testArchive} from '../archive.spec';
 
 import {ArchiveHdi} from './hdi';
 
-describe('archive/hdi', () => {
-	describe('ArchiveHdi', () => {
-		it('file extensions', () => {
-			expect(ArchiveHdi.FILE_EXTENSIONS).toEqual([
+void describe('archive/hdi', () => {
+	void describe('ArchiveHdi', () => {
+		void it('file extensions', () => {
+			deepStrictEqual(ArchiveHdi.FILE_EXTENSIONS, [
 				'.dmg',
 				'.iso',
 				'.cdr'
@@ -25,9 +27,10 @@ describe('archive/hdi', () => {
 						// 'test-archive-hfsp-j-c.dmg',
 						// 'test-archive-apfs.dmg',
 						// 'test-archive-apfs-c.dmg'
-				  ].map(s => pathJoin(specFixturesPath, s))
-				: null,
-			true
+				  ]
+				: [],
+			true,
+			s => pathJoin(specFixturesPath, s)
 		);
 	});
 });
