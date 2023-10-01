@@ -35,16 +35,10 @@ A plain directory can also be opened as an archive.
 ```js
 import {ArchiveZip} from '@shockpkg/archive-files';
 
-async function main() {
-	const archive = new ArchiveZip('path/to/archive.zip');
-	await archive.read(async entry => {
-		console.log(entry.path);
-		await entry.extract(`extracted/${entry.path}`);
-	});
-}
-main().catch(err => {
-	process.exitCode = 1;
-	console.error(err);
+const archive = new ArchiveZip('path/to/archive.zip');
+await archive.read(async entry => {
+	console.log(entry.path);
+	await entry.extract(`extracted/${entry.path}`);
 });
 ```
 
@@ -53,16 +47,10 @@ main().catch(err => {
 ```js
 import {createArchiveByFileExtension} from '@shockpkg/archive-files';
 
-async function main() {
-	const archive = createArchiveByFileExtension('path/to/archive.zip');
-	await archive.read(async entry => {
-		console.log(entry.path);
-		await entry.extract(`extracted/${entry.path}`);
-	});
-}
-main().catch(err => {
-	process.exitCode = 1;
-	console.error(err);
+const archive = createArchiveByFileExtension('path/to/archive.zip');
+await archive.read(async entry => {
+	console.log(entry.path);
+	await entry.extract(`extracted/${entry.path}`);
 });
 ```
 
