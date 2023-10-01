@@ -18,13 +18,13 @@ describe('archive/hdi', () => {
 			ArchiveHdi,
 			platformIsMac
 				? [
-						// 'test-archive-hybrid.iso',
-						// 'test-archive-hfsp.dmg',
-						// 'test-archive-hfsp-j.dmg',
-						// 'test-archive-hfsp-c.dmg',
-						// 'test-archive-hfsp-j-c.dmg',
-						// 'test-archive-apfs.dmg',
-						// 'test-archive-apfs-c.dmg'
+						'test-archive-hybrid.iso',
+						'test-archive-hfsp.dmg',
+						'test-archive-hfsp-j.dmg',
+						'test-archive-hfsp-c.dmg',
+						'test-archive-hfsp-j-c.dmg',
+						'test-archive-apfs.dmg',
+						'test-archive-apfs-c.dmg'
 				  ].map(s => pathJoin(specFixturesPath, s))
 				: null,
 			true
