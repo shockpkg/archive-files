@@ -62,8 +62,6 @@ export function statToPathType(stat: Readonly<Stats>) {
 	if (stat.isFile()) {
 		return PathType.FILE;
 	}
-
-	// Unsupported type.
 	return null;
 }
 
