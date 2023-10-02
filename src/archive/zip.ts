@@ -8,7 +8,6 @@ import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
 import {
 	streamToBuffer,
-	streamToReadable,
 	zipEfaToUnixMode,
 	zipPathIsMacResource,
 	zipPathTypeFromEfaAndPath
@@ -27,17 +26,15 @@ const yauzlEntryRead = async (zipfile: yauzl.ZipFile, entry: yauzl.Entry) => {
 		return null;
 	}
 
-	return streamToReadable(
-		await new Promise<Readable>((resolve, reject) => {
-			zipfile.openReadStream(entry, (err, stream) => {
-				if (err) {
-					reject(err);
-					return;
-				}
-				resolve(stream);
-			});
-		})
-	);
+	return new Promise<Readable>((resolve, reject) => {
+		zipfile.openReadStream(entry, (err, stream) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+			resolve(stream);
+		});
+	});
 };
 
 /**

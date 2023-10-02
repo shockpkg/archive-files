@@ -251,56 +251,6 @@ export async function streamReadEnd(
 }
 
 /**
- * Create readable stream from another readable stream.
- * Useful for converting an active stream into an pending stream.
- *
- * @param stream Readable-compatible stream.
- * @returns Readable stream.
- */
-export function streamToReadable(stream: Readable) {
-	// Pause stream, resumed only when needed.
-	stream.pause();
-
-	// Create readable.
-	const r = new Readable({
-		/**
-		 * Read method.
-		 */
-		read: () => {
-			stream.resume();
-		}
-	});
-
-	// Forward data and end.
-	stream.on('data', d => {
-		r.push(d);
-		stream.pause();
-	});
-	stream.on('end', () => {
-		r.push(null);
-	});
-
-	// Forward errors both ways.
-	const errorsA = new Set<Error>();
-	const errorsB = new Set<Error>();
-	stream.on('error', err => {
-		if (errorsA.has(err)) {
-			return;
-		}
-		errorsA.add(err);
-		r.emit('error', err);
-	});
-	r.on('error', err => {
-		if (errorsB.has(err)) {
-			return;
-		}
-		errorsB.add(err);
-		stream.emit('error', err);
-	});
-	return r;
-}
-
-/**
  * Wrapper for lchmod, does nothing on unsupported platforms.
  *
  * @param path File path.
