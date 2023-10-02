@@ -83,8 +83,6 @@ export function modeToPathType(mode: number) {
 	if (bitwiseAndEqual(mode, 0o0100000)) {
 		return PathType.FILE;
 	}
-
-	// Unsupported type.
 	return null;
 }
 
