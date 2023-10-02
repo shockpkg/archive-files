@@ -38,7 +38,7 @@ export function defaultValue<T, U>(
 	value: T,
 	defaultValue: U
 ): Exclude<T | U, undefined> {
-	// eslint-disable-next-line no-undefined, @typescript-eslint/no-unsafe-return
+	// eslint-disable-next-line no-undefined, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
 	return value === undefined ? defaultValue : (value as any);
 }
 
@@ -305,8 +305,8 @@ export function streamToReadable(stream: Readable) {
 	});
 
 	// Forward errors both ways.
-	const errorsA = new Set<any>();
-	const errorsB = new Set<any>();
+	const errorsA = new Set<Error>();
+	const errorsB = new Set<Error>();
 	stream.on('error', err => {
 		if (errorsA.has(err)) {
 			return;

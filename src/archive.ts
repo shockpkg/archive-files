@@ -894,7 +894,7 @@ export abstract class Archive {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	public async read(itter: (entry: Entry) => Promise<any>) {
+	public async read(itter: (entry: Entry) => Promise<unknown>) {
 		if (this._reading) {
 			throw new Error('Archive already being read');
 		}
@@ -948,6 +948,6 @@ export abstract class Archive {
 	 * @param itter Async callback for each archive entry.
 	 */
 	protected abstract _read(
-		itter: (entry: Entry) => Promise<any>
+		itter: (entry: Entry) => Promise<unknown>
 	): Promise<void>;
 }

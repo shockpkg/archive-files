@@ -367,7 +367,7 @@ export class ArchiveZip extends Archive {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	public async read(itter: (entry: EntryZip) => Promise<any>) {
+	public async read(itter: (entry: EntryZip) => Promise<unknown>) {
 		await super.read(itter);
 	}
 
@@ -377,7 +377,7 @@ export class ArchiveZip extends Archive {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	protected async _read(itter: (entry: EntryZip) => Promise<any>) {
+	protected async _read(itter: (entry: EntryZip) => Promise<unknown>) {
 		const zipfile = await new Promise<yauzl.ZipFile>((resolve, reject) => {
 			yauzl.open(this.path, {lazyEntries: true}, (err, zipfile) => {
 				if (err) {

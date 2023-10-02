@@ -66,7 +66,7 @@ export class ArchiveTarGz extends ArchiveTar {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	public async read(itter: (entry: EntryTarGz) => Promise<any>) {
+	public async read(itter: (entry: EntryTarGz) => Promise<unknown>) {
 		await super.read(itter);
 	}
 
@@ -76,7 +76,7 @@ export class ArchiveTarGz extends ArchiveTar {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	protected async _read(itter: (entry: EntryTarGz) => Promise<any>) {
+	protected async _read(itter: (entry: EntryTarGz) => Promise<unknown>) {
 		await super._read(itter);
 	}
 

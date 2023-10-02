@@ -213,7 +213,7 @@ export class ArchiveHdi extends Archive {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	public async read(itter: (entry: EntryHdi) => Promise<any>) {
+	public async read(itter: (entry: EntryHdi) => Promise<unknown>) {
 		await super.read(itter);
 	}
 
@@ -224,7 +224,7 @@ export class ArchiveHdi extends Archive {
 	 *
 	 * @param itter Async callback for each archive entry.
 	 */
-	protected async _read(itter: (entry: EntryHdi) => Promise<any>) {
+	protected async _read(itter: (entry: EntryHdi) => Promise<unknown>) {
 		/**
 		 * Each itterator.
 		 *

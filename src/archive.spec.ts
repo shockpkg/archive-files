@@ -181,15 +181,11 @@ export class EntryTest extends Entry {
 export class ArchiveTest extends Archive {
 	public readonly Entry = EntryTest;
 
-	constructor(path: string) {
-		super(path);
-	}
-
-	public async read(itter: (entry: EntryTest) => Promise<any>) {
+	public async read(itter: (entry: EntryTest) => Promise<unknown>) {
 		await super.read(itter);
 	}
 
-	protected async _read(itter: (entry: EntryTest) => Promise<any>) {
+	protected async _read(itter: (entry: EntryTest) => Promise<unknown>) {
 		for (const info of testEntries) {
 			const entry = new this.Entry({archive: this, ...info});
 			// eslint-disable-next-line no-await-in-loop
