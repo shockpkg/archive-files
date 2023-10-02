@@ -175,32 +175,21 @@ export function zipPathIsMacResource(path: string) {
 export async function streamToBuffer(stream: Readable) {
 	const buffer = await new Promise<Buffer>((resolve, reject) => {
 		const datas: Buffer[] = [];
-		let once = false;
-
-		/**
-		 * Done callback.
-		 *
-		 * @param err Error object or undefined.
-		 */
-		const done = (err?: Error) => {
-			if (once) {
-				return;
-			}
-			once = true;
-			if (err) {
-				reject(err);
-				return;
-			}
-			resolve(Buffer.concat(datas));
-		};
+		let done = false;
 		stream.on('data', (data: Buffer) => {
 			datas.push(data);
 		});
 		stream.on('error', err => {
-			done(err);
+			if (!done) {
+				done = true;
+				reject(err);
+			}
 		});
 		stream.on('end', () => {
-			done();
+			if (!done) {
+				done = true;
+				resolve(Buffer.concat(datas));
+			}
 		});
 	});
 	return buffer;
