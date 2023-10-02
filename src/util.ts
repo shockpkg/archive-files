@@ -14,7 +14,6 @@ import {Readable} from 'node:stream';
 import {PathType} from './types';
 
 export interface IFsWalkOptions {
-	//
 	/**
 	 * Ignore unreadable directores when walking directory.
 	 *

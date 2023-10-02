@@ -20,7 +20,6 @@ const walkOpts = {
 };
 
 export interface IEntryInfoDir extends IEntryInfo {
-	//
 	/**
 	 * Entry archive.
 	 */

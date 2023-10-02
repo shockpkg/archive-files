@@ -6,7 +6,7 @@ import {ArchiveTarBz2} from './archive/tar/bz2';
 import {ArchiveTarGz} from './archive/tar/gz';
 import {ArchiveZip} from './archive/zip';
 
-const archives: typeof Archive[] = [
+const archives: (typeof Archive)[] = [
 	ArchiveDir,
 	ArchiveHdi,
 	ArchiveTar,
@@ -16,7 +16,6 @@ const archives: typeof Archive[] = [
 ];
 
 interface IArchiveExt {
-	//
 	/**
 	 * Archive constructor.
 	 */

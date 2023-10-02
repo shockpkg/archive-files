@@ -5,7 +5,6 @@ import {createGunzip} from 'node:zlib';
 import {ArchiveTar, EntryTar, IEntryInfoTar} from '../tar';
 
 export interface IEntryInfoTarGz extends IEntryInfoTar {
-	//
 	/**
 	 * Entry archive.
 	 */

@@ -26,7 +26,6 @@ import {
 } from './util';
 
 export interface IArchiveAfterReadSetAttributesEntry {
-	//
 	/**
 	 * Extract path, relative.
 	 */
@@ -44,7 +43,6 @@ export interface IArchiveAfterReadSetAttributesEntry {
 }
 
 export interface IExtractOptions {
-	//
 	/**
 	 * Replace whatever may be at the path.
 	 * A directory will not replace another directory.
@@ -83,7 +81,6 @@ export interface IExtractOptions {
 }
 
 export interface IEntryInfo {
-	//
 	/**
 	 * Entry archive.
 	 */

@@ -65,7 +65,6 @@ const streamFromBufferListGenerator = (gen: AsyncGenerator<IBufferList>) => {
 };
 
 export interface IEntryInfoTar extends IEntryInfo {
-	//
 	/**
 	 * Entry archive.
 	 */

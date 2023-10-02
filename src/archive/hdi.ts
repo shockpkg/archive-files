@@ -21,7 +21,6 @@ const walkOpts = {
 };
 
 export interface IEntryInfoHdi extends IEntryInfo {
-	//
 	/**
 	 * Entry archive.
 	 */

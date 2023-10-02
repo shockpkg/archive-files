@@ -56,7 +56,6 @@ const yauzlEntryReadSymlink = async (
 };
 
 export interface IZipEntryExtraField {
-	//
 	/**
 	 * Field ID.
 	 */
@@ -69,7 +68,6 @@ export interface IZipEntryExtraField {
 }
 
 export interface IEntryInfoZip extends IEntryInfo {
-	//
 	/**
 	 * Entry archive.
 	 */

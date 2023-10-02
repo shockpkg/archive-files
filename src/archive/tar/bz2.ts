@@ -5,7 +5,6 @@ import unbzip2Stream from 'unbzip2-stream';
 import {ArchiveTar, EntryTar, IEntryInfoTar} from '../tar';
 
 export interface IEntryInfoTarBz2 extends IEntryInfoTar {
-	//
 	/**
 	 * Entry archive.
 	 */
