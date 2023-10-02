@@ -112,59 +112,6 @@ export function bitwiseAndEqual(value: number, mask: number) {
 }
 
 /**
- * Get Unix bits from the ZIP file external file attributes.
- *
- * @param attrs Attributes value.
- * @returns Unix bits or null.
- */
-export function zipEfaToUnix(attrs: number) {
-	// eslint-disable-next-line no-bitwise
-	return attrs >>> 16;
-}
-
-/**
- * Get stat mode value from ZIP file external file attributes, if present.
- *
- * @param attrs Attributes value.
- * @returns Stat mode or null.
- */
-export function zipEfaToUnixMode(attrs: number) {
-	const mode = zipEfaToUnix(attrs);
-
-	// Check if type bits are present, else no Unix info.
-	// eslint-disable-next-line no-bitwise
-	return (mode >> 12) & 0b1111 ? mode : null;
-}
-
-/**
- * Get path type from attributes and path value from ZIP file entry.
- *
- * @param attrs Attributes value.
- * @param path Entry path.
- * @returns Path type.
- */
-export function zipPathTypeFromEfaAndPath(attrs: number, path: string) {
-	// Check for Unix stat type information.
-	const mode = zipEfaToUnixMode(attrs);
-	if (!mode) {
-		// No Unix type infromation, assume Windows info only.
-		// Only files and directories, with directores having a trailing slash.
-		return /[\\/]$/.test(path) ? PathType.DIRECTORY : PathType.FILE;
-	}
-	return modeToPathType(mode);
-}
-
-/**
- * Check if path is a Mac resource fork related path.
- *
- * @param path Zip path.
- * @returns Boolean value.
- */
-export function zipPathIsMacResource(path: string) {
-	return /^__MACOSX(\\|\/|$)/.test(path);
-}
-
-/**
  * Read a stream into a buffer.
  * Reading a stream into a buffer should be avoided where possible.
  * This is however useful for some small streams.

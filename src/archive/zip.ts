@@ -6,12 +6,7 @@ import yauzl from 'yauzl';
 
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
-import {
-	streamToBuffer,
-	zipEfaToUnixMode,
-	zipPathIsMacResource,
-	zipPathTypeFromEfaAndPath
-} from '../util';
+import {modeToPathType, streamToBuffer} from '../util';
 
 /**
  * Read entry.
@@ -326,37 +321,6 @@ export class ArchiveZip extends Archive {
 	}
 
 	/**
-	 * Get stat mode value from ZIP file external file attributes.
-	 *
-	 * @param value Attributes value.
-	 * @returns Stat mode or null.
-	 */
-	public zipEfaToUnixMode(value: number) {
-		return zipEfaToUnixMode(value);
-	}
-
-	/**
-	 * Get path type from mode and path value from ZIP file entry.
-	 *
-	 * @param mode Entry mode.
-	 * @param path Entry path.
-	 * @returns Path type.
-	 */
-	public zipPathTypeFromEfaAndPath(mode: number, path: string) {
-		return zipPathTypeFromEfaAndPath(mode, path);
-	}
-
-	/**
-	 * Check if path is a Mac resource fork related path.
-	 *
-	 * @param path Zip path.
-	 * @returns Boolean value.
-	 */
-	public zipPathIsMacResource(path: string) {
-		return zipPathIsMacResource(path);
-	}
-
-	/**
 	 * Read archive.
 	 * If the itter callback returns false, reading ends.
 	 *
@@ -373,6 +337,8 @@ export class ArchiveZip extends Archive {
 	 * @param itter Async callback for each archive entry.
 	 */
 	protected async _read(itter: (entry: EntryZip) => Promise<unknown>) {
+		const Static = this.constructor as typeof ArchiveZip;
+
 		const zipfile = await new Promise<yauzl.ZipFile>((resolve, reject) => {
 			yauzl.open(this.path, {lazyEntries: true}, (err, zipfile) => {
 				if (err) {
@@ -405,7 +371,7 @@ export class ArchiveZip extends Archive {
 				versionNeededToExtract
 			} = yentry;
 
-			const type = this.zipPathTypeFromEfaAndPath(
+			const type = Static.efaOrPathToPathType(
 				externalFileAttributes,
 				fileName
 			);
@@ -415,12 +381,12 @@ export class ArchiveZip extends Archive {
 
 			// Mac resource fork paths currently unsupported, so skip.
 			// The actual file format is unknown.
-			const isMacResource = this.zipPathIsMacResource(fileName);
+			const isMacResource = Static.pathIsMacResource(fileName);
 			if (isMacResource) {
 				return false;
 			}
 
-			const mode = this.zipEfaToUnixMode(externalFileAttributes);
+			const mode = Static.efaToUnixMode(externalFileAttributes);
 			const lastModDate = yentry.getLastModDate();
 			const isCompressed = yentry.isCompressed();
 			const isEncrypted = yentry.isEncrypted();
@@ -498,5 +464,58 @@ export class ArchiveZip extends Archive {
 			});
 			next(null);
 		});
+	}
+
+	/**
+	 * Get Unix bits from the ZIP file external file attributes.
+	 *
+	 * @param attrs Attributes value.
+	 * @returns Unix bits or null.
+	 */
+	public static efaToUnix(attrs: number) {
+		// eslint-disable-next-line no-bitwise
+		return attrs >>> 16;
+	}
+
+	/**
+	 * Get stat mode value from ZIP file external file attributes, if present.
+	 *
+	 * @param attrs Attributes value.
+	 * @returns Stat mode or null.
+	 */
+	public static efaToUnixMode(attrs: number) {
+		const mode = this.efaToUnix(attrs);
+
+		// Check if type bits are present, else no Unix info.
+		// eslint-disable-next-line no-bitwise
+		return (mode >> 12) & 0b1111 ? mode : null;
+	}
+
+	/**
+	 * Get path type from attributes and path value from ZIP file entry.
+	 *
+	 * @param attrs Attributes value.
+	 * @param path Entry path.
+	 * @returns Path type.
+	 */
+	public static efaOrPathToPathType(attrs: number, path: string) {
+		// Check for Unix stat type information.
+		const mode = this.efaToUnixMode(attrs);
+		if (!mode) {
+			// No Unix type information, assume Windows info only.
+			// Only file or directory, with directory having a trailing slash.
+			return /[\\/]$/.test(path) ? PathType.DIRECTORY : PathType.FILE;
+		}
+		return modeToPathType(mode);
+	}
+
+	/**
+	 * Check if path is a Mac resource fork related path.
+	 *
+	 * @param path Zip path.
+	 * @returns Boolean value.
+	 */
+	public static pathIsMacResource(path: string) {
+		return /^__MACOSX(\\|\/|$)/.test(path);
 	}
 }

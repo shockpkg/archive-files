@@ -16,8 +16,7 @@ import {
 	fsLutimesSupported,
 	modePermissionBits,
 	pathResourceFork,
-	streamToBuffer,
-	zipPathIsMacResource
+	streamToBuffer
 } from './util';
 
 // An option to disable mtime testing (for a CI that has issues).
@@ -298,10 +297,7 @@ export function testArchive(
 								strictEqual(entry.volumePath, entry.path);
 							}
 
-							strictEqual(
-								zipPathIsMacResource(entry.path),
-								false
-							);
+							ok(!entry.path.startsWith('__MACOSX'));
 
 							if (!safeToExtract(entry)) {
 								return;
