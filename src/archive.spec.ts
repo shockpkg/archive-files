@@ -236,6 +236,14 @@ export function testArchive(
 							const {type, size} = entry;
 							const stream = await entry.stream();
 
+							if (stream) {
+								strictEqual(stream.listenerCount('data'), 0);
+
+								await new Promise(resolve =>
+									setTimeout(resolve, 100)
+								);
+							}
+
 							const buffer = stream
 								? await streamToBuffer(stream)
 								: null;
