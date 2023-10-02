@@ -5,7 +5,6 @@ import {Readable} from 'node:stream';
 
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
-import {defaultNull} from '../util';
 
 // Based on it-tar TarEntryHeader.
 interface IHeader {
@@ -208,10 +207,10 @@ export class EntryTar extends Entry {
 		this.mode = info.mode;
 		this.uid = info.uid;
 		this.gid = info.gid;
-		this.uname = defaultNull(info.uname);
-		this.gname = defaultNull(info.gname);
+		this.uname = info.uname ?? null;
+		this.gname = info.gname ?? null;
 		this.mtime = info.mtime;
-		this.linkname = defaultNull(info.linkname);
+		this.linkname = info.linkname ?? null;
 	}
 }
 
@@ -290,7 +289,7 @@ export class ArchiveTar extends Archive {
 			const {mode, uid, gid, mtime, uname, gname} = header;
 
 			// Used for symbolic links, convert to a buffer.
-			const linkname = defaultNull(header.linkname);
+			const linkname = header.linkname ?? null;
 			const linknameBuffer =
 				linkname === null ? null : Buffer.from(linkname, 'utf8');
 

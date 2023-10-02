@@ -10,8 +10,6 @@ const pipe = promisify(pipeline);
 
 import {PathType} from './types';
 import {
-	defaultNull,
-	defaultValue,
 	fsChmod,
 	fsLchmod,
 	fsLstatExists,
@@ -266,18 +264,18 @@ export abstract class Entry {
 		this.type = info.type;
 		this.pathRaw = info.pathRaw;
 		this.path = pathNormalize(info.pathRaw);
-		this.size = defaultNull(info.size);
-		this.sizeComp = defaultNull(info.sizeComp);
-		this.mode = defaultNull(info.mode);
-		this.uid = defaultNull(info.uid);
-		this.gid = defaultNull(info.gid);
-		this.uname = defaultNull(info.uname);
-		this.gname = defaultNull(info.gname);
-		this.atime = defaultNull(info.atime);
-		this.mtime = defaultNull(info.mtime);
-		this._readData = defaultNull(info.readData);
-		this._readRsrc = defaultNull(info.readRsrc);
-		this._readSymlink = defaultNull(info.readSymlink);
+		this.size = info.size ?? null;
+		this.sizeComp = info.sizeComp ?? null;
+		this.mode = info.mode ?? null;
+		this.uid = info.uid ?? null;
+		this.gid = info.gid ?? null;
+		this.uname = info.uname ?? null;
+		this.gname = info.gname ?? null;
+		this.atime = info.atime ?? null;
+		this.mtime = info.mtime ?? null;
+		this._readData = info.readData ?? null;
+		this._readRsrc = info.readRsrc ?? null;
+		this._readSymlink = info.readSymlink ?? null;
 	}
 
 	/**
@@ -400,11 +398,7 @@ export abstract class Entry {
 	) {
 		const pathSet = pathFull === null ? path : pathFull;
 
-		const ignorePermissions = defaultValue(
-			options.ignorePermissions,
-			false
-		);
-		const ignoreTimes = defaultValue(options.ignoreTimes, false);
+		const {ignorePermissions, ignoreTimes} = options;
 
 		const {type, mode, atime, mtime} = this;
 
@@ -522,7 +516,7 @@ export abstract class Entry {
 		reader: () => Promise<Readable | null>,
 		options: Readonly<IExtractOptions>
 	) {
-		const replace = defaultValue(options.replace, false);
+		const {replace} = options;
 
 		// Check if something exists at path, optionally removing.
 		const stat = await fsLstatExists(path);
@@ -582,7 +576,7 @@ export abstract class Entry {
 		}
 
 		// Optionally extract as a data file.
-		if (defaultValue(options.resourceForkAsFile, false)) {
+		if (options.resourceForkAsFile) {
 			await this._extractStreamToFile(path, readRsrc, options);
 			return;
 		}
@@ -618,7 +612,7 @@ export abstract class Entry {
 		path: string,
 		options: Readonly<IExtractOptions>
 	) {
-		const replace = defaultValue(options.replace, false);
+		const {replace} = options;
 
 		// Check if something exists at path, else create.
 		const stat = await fsLstatExists(path);
@@ -655,8 +649,7 @@ export abstract class Entry {
 			throw new Error('Internal error');
 		}
 
-		const replace = defaultValue(options.replace, false);
-		const symlinkAsFile = defaultValue(options.symlinkAsFile, false);
+		const {replace, symlinkAsFile} = options;
 
 		// Check if something exists at path, optionally removing.
 		const stat = await fsLstatExists(path);

@@ -27,31 +27,6 @@ export const fsLchmodSupported = !!O_SYMLINK;
 export const fsLutimesSupported = !!O_SYMLINK;
 
 /**
- * Default value if value is undefined.
- *
- * @param value Value.
- * @param defaultValue Default value.
- * @returns Value or the default value if undefined.
- */
-export function defaultValue<T, U>(
-	value: T,
-	defaultValue: U
-): Exclude<T | U, undefined> {
-	// eslint-disable-next-line no-undefined, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
-	return value === undefined ? defaultValue : (value as any);
-}
-
-/**
- * Default null if value is undefined.
- *
- * @param value Value.
- * @returns Value or null if undefined.
- */
-export function defaultNull<T>(value: T) {
-	return defaultValue(value, null);
-}
-
-/**
  * Normalize an entry path.
  *
  * @param path Path string.
