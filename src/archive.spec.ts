@@ -19,12 +19,6 @@ import {
 	streamToBuffer
 } from './util';
 
-// An option to disable mtime testing (for a CI that has issues).
-// For Travis on Windows, which randomly fails to have the correct mtime.
-export const disableMtimeTesting =
-	// eslint-disable-next-line no-process-env
-	process.env.ARCHIVE_FILES_DISABLE_MTIME_TESTING === '1';
-
 export const specTmpPath = (
 	(i: number) => (s: string) =>
 		pathJoin('spec', 'tmp', s, `${i++}`)
@@ -337,7 +331,6 @@ export function testArchive(
 							}
 
 							if (
-								!disableMtimeTesting &&
 								setMtime &&
 								(fsLutimesSupported ||
 									type !== PathType.SYMLINK)
