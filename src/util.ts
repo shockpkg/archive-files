@@ -80,9 +80,11 @@ export function pathResourceFork(path: string) {
 export function statToPathType(stat: Readonly<Stats>) {
 	if (stat.isSymbolicLink()) {
 		return PathType.SYMLINK;
-	} else if (stat.isDirectory()) {
+	}
+	if (stat.isDirectory()) {
 		return PathType.DIRECTORY;
-	} else if (stat.isFile()) {
+	}
+	if (stat.isFile()) {
 		return PathType.FILE;
 	}
 
@@ -405,19 +407,7 @@ export async function fsSymlink(
 	path: string | Readonly<Buffer>,
 	target: string | Readonly<Buffer>
 ) {
-	try {
-		await symlink(target as string | Buffer, path as string | Buffer);
-	} catch (err) {
-		// Workaround for issue in Node v14.5.0 on Windows.
-		if (
-			(err as {name: string}).name === 'TypeError' &&
-			typeof target !== 'string'
-		) {
-			await symlink(target.toString(), path as string | Buffer);
-		} else {
-			throw err;
-		}
-	}
+	await symlink(target, path);
 }
 
 /**
@@ -482,6 +472,7 @@ export async function fsWalk(
 	itter: (path: string, stat: Stats) => Promise<boolean | null | void>,
 	options: Readonly<IFsWalkOptions> = {}
 ) {
+	const {ignoreUnreadableDirectories} = options;
 	const stack = (await fsReaddir(base)).reverse();
 	while (stack.length) {
 		const entry = stack.pop() as string;
@@ -506,12 +497,12 @@ export async function fsWalk(
 			subs = await fsReaddir(fullPath);
 		} catch (err) {
 			if (
-				err &&
-				options.ignoreUnreadableDirectories &&
-				(err as {code: string}).code === 'EACCES'
+				!(
+					err &&
+					ignoreUnreadableDirectories &&
+					(err as {code: string}).code === 'EACCES'
+				)
 			) {
-				// Skip it.
-			} else {
 				throw err;
 			}
 		}
