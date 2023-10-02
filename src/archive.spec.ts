@@ -261,34 +261,7 @@ export function testArchive(
 
 						await archive.read(async entry => {
 							const {type, size} = entry;
-							const {stream, done} = await entry.read();
-
-							const buffer = stream
-								? await streamToBuffer(stream)
-								: null;
-
-							if (buffer) {
-								notStrictEqual(type, PathType.DIRECTORY);
-
-								if (size !== null) {
-									strictEqual(buffer.length, size);
-								}
-							} else {
-								strictEqual(type, PathType.DIRECTORY);
-							}
-
-							await done;
-						});
-					});
-				});
-
-				void it('readBuffer', async () => {
-					await withSetup(path, async path => {
-						const archive = new ArchiveConstructor(path);
-
-						await archive.read(async entry => {
-							const {type, size} = entry;
-							const buffer = await entry.readBuffer();
+							const buffer = await entry.read();
 
 							if (buffer) {
 								notStrictEqual(type, PathType.DIRECTORY);

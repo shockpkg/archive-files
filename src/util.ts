@@ -211,46 +211,6 @@ export async function streamToBuffer(
 }
 
 /**
- * Awaits stream read end.
- * The stream must be read from.
- * Otherwise this promise will never complete, since the stream will not start.
- *
- * @param stream Stream object.
- * @param doneEvent The stream done event.
- */
-export async function streamReadEnd(
-	stream: Readable,
-	doneEvent: string = 'end'
-) {
-	await new Promise<void>((resolve, reject) => {
-		let once = false;
-
-		/**
-		 * Done callback.
-		 *
-		 * @param err Error object or undefined.
-		 */
-		const done = (err?: Error) => {
-			if (once) {
-				return;
-			}
-			once = true;
-			if (err) {
-				reject(err);
-				return;
-			}
-			resolve();
-		};
-		stream.on('error', err => {
-			done(err);
-		});
-		stream.on(doneEvent, () => {
-			done();
-		});
-	});
-}
-
-/**
  * Wrapper for lchmod, does nothing on unsupported platforms.
  *
  * @param path File path.

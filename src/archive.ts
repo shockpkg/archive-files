@@ -19,7 +19,6 @@ import {
 	modePermissionBits,
 	pathNormalize,
 	pathResourceFork,
-	streamReadEnd,
 	streamToBuffer
 } from './util';
 
@@ -325,26 +324,11 @@ export abstract class Entry {
 	}
 
 	/**
-	 * Read entry as stream, or null if nothing to read.
-	 * Also includes a done promise to wait for read end.
-	 *
-	 * @returns Info object.
-	 */
-	public async read() {
-		this._beginExtract();
-		const stream = await this._stream();
-		return {
-			stream,
-			done: stream ? streamReadEnd(stream) : Promise.resolve()
-		};
-	}
-
-	/**
 	 * Read entire entry into a Buffer.
 	 *
 	 * @returns Buffer or null if nothing to be read.
 	 */
-	public async readBuffer() {
+	public async read() {
 		this._beginExtract();
 		const stream = await this._stream();
 		return stream ? streamToBuffer(stream) : null;
