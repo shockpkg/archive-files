@@ -6,6 +6,9 @@ import {platformIsMac, specFixturesPath, testArchive} from '../archive.spec';
 
 import {ArchiveHdi} from './hdi';
 
+// eslint-disable-next-line no-process-env
+const NO_HDI = /^(1|true|yes)$/i.test(process.env['SHOCKPKG_NO_HDI'] || '');
+
 void describe('archive/hdi', () => {
 	void describe('ArchiveHdi', () => {
 		void it('file extensions', () => {
@@ -18,7 +21,7 @@ void describe('archive/hdi', () => {
 
 		testArchive(
 			ArchiveHdi,
-			platformIsMac
+			platformIsMac && !NO_HDI
 				? [
 						'test-archive-hybrid.iso',
 						'test-archive-hfsp.dmg',
