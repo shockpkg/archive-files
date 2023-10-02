@@ -170,13 +170,9 @@ export function zipPathIsMacResource(path: string) {
  * This is however useful for some small streams.
  *
  * @param stream Readable stream.
- * @param doneEvent The stream done event.
  * @returns Full buffer.
  */
-export async function streamToBuffer(
-	stream: Readable,
-	doneEvent: string = 'end'
-) {
+export async function streamToBuffer(stream: Readable) {
 	const buffer = await new Promise<Buffer>((resolve, reject) => {
 		const datas: Buffer[] = [];
 		let once = false;
@@ -203,7 +199,7 @@ export async function streamToBuffer(
 		stream.on('error', err => {
 			done(err);
 		});
-		stream.on(doneEvent, () => {
+		stream.on('end', () => {
 			done();
 		});
 	});

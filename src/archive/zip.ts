@@ -49,7 +49,7 @@ const yauzlEntryReadSymlink = async (
 	entry: yauzl.Entry
 ) => {
 	const stream = await yauzlEntryRead(zipfile, entry);
-	return stream ? streamToBuffer(stream, 'end') : Buffer.alloc(0);
+	return stream ? streamToBuffer(stream) : Buffer.alloc(0);
 };
 
 export interface IZipEntryExtraField {
