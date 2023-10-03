@@ -56,7 +56,7 @@
 	"copyright": "Copyright (c) 2019-2023 JrMasterModelBuilder",
 	"license": "MPL-2.0",
 	"dependencies": {
-		"@shockpkg/hdi-mac": "^3.0.1",
+		"@shockpkg/hdi-mac": "^3.1.0",
 		"it-tar": "^6.0.1",
 		"unbzip2-stream": "^1.4.3",
 		"yauzl": "^2.10.0"
