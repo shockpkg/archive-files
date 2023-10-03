@@ -861,11 +861,12 @@ export abstract class Archive {
 	}
 
 	/**
-	 * Syncronously cleanup temporary resources.
-	 * Can be called on shutdown/abort/signals to free resources.
+	 * Syncronously cleanup temporary resources on shutdown.
+	 * Can be called on shutdown/abort to free resources.
+	 * Should not be called at any other time.
 	 * Not applicable to most archive formats.
 	 */
-	public cleanup() {
+	public shutdown() {
 		// Do nothing.
 	}
 

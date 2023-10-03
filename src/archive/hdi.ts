@@ -218,7 +218,7 @@ export class ArchiveHdi extends Archive {
 	 *
 	 * @inheritdoc
 	 */
-	public cleanup() {
+	public shutdown() {
 		const active = this._active;
 		for (const a of active) {
 			a.signal.abort = true;
