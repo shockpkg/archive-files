@@ -9,7 +9,8 @@ import {
 	utimes
 } from 'node:fs/promises';
 import {join as pathJoin} from 'node:path';
-import {Readable} from 'node:stream';
+import {Readable, Writable} from 'node:stream';
+import {pipeline} from 'node:stream/promises';
 
 import {PathType} from './types';
 
@@ -116,26 +117,20 @@ export function bitwiseAndEqual(value: number, mask: number) {
  * @returns Full buffer.
  */
 export async function streamToBuffer(stream: Readable) {
-	const buffer = await new Promise<Buffer>((resolve, reject) => {
-		const datas: Buffer[] = [];
-		let done = false;
-		stream.on('data', (data: Buffer) => {
-			datas.push(data);
-		});
-		stream.on('error', err => {
-			if (!done) {
-				done = true;
-				reject(err);
+	const datas: Buffer[] = [];
+	let size = 0;
+	await pipeline(
+		stream,
+		new Writable({
+			// eslint-disable-next-line jsdoc/require-jsdoc
+			write: (data: Buffer, _encoding: unknown, cb) => {
+				datas.push(data);
+				size += data.length;
+				cb();
 			}
-		});
-		stream.on('end', () => {
-			if (!done) {
-				done = true;
-				resolve(Buffer.concat(datas));
-			}
-		});
-	});
-	return buffer;
+		})
+	);
+	return Buffer.concat(datas, size);
 }
 
 /**
