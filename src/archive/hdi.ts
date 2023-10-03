@@ -318,15 +318,14 @@ export class ArchiveHdi extends Archive {
 		// Attach disk image, using automatic eject on shutdown (3rd arg).
 		// Just in case process shutdown without reaching finally.
 		const {mounterMac, nobrowse} = this;
-		// eslint-disable-next-line @typescript-eslint/unbound-method
-		const {devices, eject} = await mounterMac.attach(this.path, {
+		const info = await mounterMac.attach(this.path, {
 			nobrowse,
 			readonly: true
 		});
 
 		// Eject device when done.
 		try {
-			for (const device of devices) {
+			for (const device of info.devices) {
 				const {mountPoint} = device;
 				if (!mountPoint) {
 					continue;
@@ -345,7 +344,7 @@ export class ArchiveHdi extends Archive {
 				);
 			}
 		} finally {
-			await eject();
+			await info.eject();
 		}
 	}
 }
