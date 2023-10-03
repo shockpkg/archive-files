@@ -319,14 +319,10 @@ export class ArchiveHdi extends Archive {
 		// Just in case process shutdown without reaching finally.
 		const {mounterMac, nobrowse} = this;
 		// eslint-disable-next-line @typescript-eslint/unbound-method
-		const {devices, eject} = await mounterMac.attach(
-			this.path,
-			{
-				nobrowse,
-				readonly: true
-			},
-			{}
-		);
+		const {devices, eject} = await mounterMac.attach(this.path, {
+			nobrowse,
+			readonly: true
+		});
 
 		// Eject device when done.
 		try {
