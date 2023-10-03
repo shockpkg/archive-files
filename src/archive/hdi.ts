@@ -8,7 +8,6 @@ import {IMounterAttachInfo, Mounter} from '@shockpkg/hdi-mac';
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
 import {
-	IFsWalkSignal,
 	fsLstatExists,
 	fsReadlinkRaw,
 	fsWalk,
@@ -19,6 +18,10 @@ import {
 
 const walkOpts = {
 	ignoreUnreadableDirectories: true
+};
+
+const ejectOptions = {
+	force: true
 };
 
 export interface IEntryInfoHdi extends IEntryInfo {
@@ -197,37 +200,12 @@ export class ArchiveHdi extends Archive {
 	public nobrowse = false;
 
 	/**
-	 * Actively attached info objects.
-	 */
-	protected _active = new Set<{
-		info: IMounterAttachInfo;
-		signal: IFsWalkSignal;
-	}>();
-
-	/**
 	 * ArchiveHdi constructor.
 	 *
 	 * @param path File path.
 	 */
 	constructor(path: string) {
 		super(path);
-	}
-
-	/**
-	 * Call this to eject actively open disk images on shutdown.
-	 *
-	 * @inheritdoc
-	 */
-	public shutdown() {
-		const active = this._active;
-		for (const a of active) {
-			a.signal.abort = true;
-			// eslint-disable-next-line no-sync
-			a.info.ejectSync({
-				force: true
-			});
-			active.delete(a);
-		}
 	}
 
 	/**
@@ -241,6 +219,8 @@ export class ArchiveHdi extends Archive {
 	 * @inheritdoc
 	 */
 	protected async _read(itter: (entry: EntryHdi) => Promise<unknown>) {
+		const {mounterMac, nobrowse} = this;
+
 		/**
 		 * Each itterator.
 		 *
@@ -332,17 +312,23 @@ export class ArchiveHdi extends Archive {
 			return true;
 		};
 
-		// Attach disk image, using automatic eject on shutdown (3rd arg).
-		// Just in case process shutdown without reaching finally.
-		const {mounterMac, nobrowse} = this;
-		const info = await mounterMac.attach(this.path, {
+		let info: IMounterAttachInfo | null = null;
+
+		/**
+		 * Attempt to auto-eject on normal shutdown.
+		 * Does not catch signals (no clean way in a library).
+		 * Users can explicitly call process.exit() on signals to invoke this.
+		 */
+		const shutdown = () => {
+			// eslint-disable-next-line no-sync
+			info?.ejectSync(ejectOptions);
+		};
+		process.once('exit', shutdown);
+
+		info = await mounterMac.attach(this.path, {
 			nobrowse,
 			readonly: true
 		});
-
-		const signal = {};
-		const active = {info, signal};
-		this._active.add(active);
 
 		// Eject device when done.
 		try {
@@ -361,13 +347,13 @@ export class ArchiveHdi extends Archive {
 						const pathRaw = pathJoin(volumeName, pathRel);
 						return each(pathFull, pathRaw, stat);
 					},
-					walkOpts,
-					signal
+					walkOpts
 				);
 			}
 		} finally {
-			await info.eject();
-			this._active.delete(active);
+			await info.eject(ejectOptions);
+			info = null;
+			process.off('exit', shutdown);
 		}
 	}
 }

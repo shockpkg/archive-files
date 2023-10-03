@@ -22,15 +22,6 @@ export interface IFsWalkOptions {
 	ignoreUnreadableDirectories?: boolean;
 }
 
-export interface IFsWalkSignal {
-	/**
-	 * Option to abort walker while walking.
-	 *
-	 * @default false
-	 */
-	abort?: boolean;
-}
-
 const {O_WRONLY, O_SYMLINK} = fsConstants;
 export const fsLchmodSupported = !!O_SYMLINK;
 export const fsLutimesSupported = !!O_SYMLINK;
@@ -288,29 +279,24 @@ export async function fsLstatExists(path: string) {
  * @param base Directory path.
  * @param itter Callback for each entry.
  * @param options Walk options.
- * @param signal Walk signal.
  */
 export async function fsWalk(
 	base: string,
 	itter: (path: string, stat: Stats) => Promise<boolean | null | void>,
-	options: Readonly<IFsWalkOptions> = {},
-	signal: IFsWalkSignal = {}
+	options: Readonly<IFsWalkOptions> = {}
 ) {
 	const {ignoreUnreadableDirectories} = options;
 	const stack = (await fsReaddir(base)).reverse();
-	while (!signal.abort && stack.length) {
+	while (stack.length) {
 		const entry = stack.pop() as string;
 		const fullPath = pathJoin(base, entry);
 		// eslint-disable-next-line no-await-in-loop
 		const stat = await fsLstat(fullPath);
-		if (signal.abort) {
-			break;
-		}
 
 		// Callback, possibly stop recursion on directory.
 		// eslint-disable-next-line no-await-in-loop
 		const recurse = await itter(entry, stat);
-		if (signal.abort || recurse === null) {
+		if (recurse === null) {
 			break;
 		}
 		if (recurse === false || !stat.isDirectory()) {
@@ -332,9 +318,6 @@ export async function fsWalk(
 			) {
 				throw err;
 			}
-		}
-		if (signal.abort) {
-			break;
 		}
 		for (let i = subs.length; i--; ) {
 			stack.push(pathJoin(entry, subs[i]));
