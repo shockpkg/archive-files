@@ -762,7 +762,6 @@ export abstract class Entry {
 export abstract class Archive {
 	/**
 	 * List of file extensions, or null.
-	 * All subclasses should implement this property.
 	 */
 	public static readonly FILE_EXTENSIONS: string[] | null = null;
 

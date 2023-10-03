@@ -21,52 +21,52 @@ const walkOpts = {
 
 export interface IEntryInfoDir extends IEntryInfo {
 	/**
-	 * Entry archive.
+	 * @inheritdoc
 	 */
 	archive: ArchiveDir;
 
 	/**
-	 * Entry size.
+	 * @inheritdoc
 	 */
 	size: number;
 
 	/**
-	 * Entry size, compressed.
+	 * @inheritdoc
 	 */
 	sizeComp?: null;
 
 	/**
-	 * Entry mode.
+	 * @inheritdoc
 	 */
 	mode: number;
 
 	/**
-	 * Entry uid.
+	 * @inheritdoc
 	 */
 	uid: number;
 
 	/**
-	 * Entry gid.
+	 * @inheritdoc
 	 */
 	gid: number;
 
 	/**
-	 * Entry uname.
+	 * @inheritdoc
 	 */
 	uname?: null;
 
 	/**
-	 * Entry gname.
+	 * @inheritdoc
 	 */
 	gname?: null;
 
 	/**
-	 * Entry atime.
+	 * @inheritdoc
 	 */
 	atime: Date;
 
 	/**
-	 * Entry mtime.
+	 * @inheritdoc
 	 */
 	mtime: Date;
 }
@@ -76,52 +76,52 @@ export interface IEntryInfoDir extends IEntryInfo {
  */
 export class EntryDir extends Entry {
 	/**
-	 * Entry archive.
+	 * @inheritdoc
 	 */
 	public readonly archive: ArchiveDir;
 
 	/**
-	 * Entry size.
+	 * @inheritdoc
 	 */
 	public readonly size: number;
 
 	/**
-	 * Entry size, compressed.
+	 * @inheritdoc
 	 */
 	public readonly sizeComp: null = null;
 
 	/**
-	 * Entry mode.
+	 * @inheritdoc
 	 */
 	public readonly mode: number;
 
 	/**
-	 * Entry uid.
+	 * @inheritdoc
 	 */
 	public readonly uid: number;
 
 	/**
-	 * Entry gid.
+	 * @inheritdoc
 	 */
 	public readonly gid: number;
 
 	/**
-	 * Entry uname.
+	 * @inheritdoc
 	 */
 	public readonly uname: null = null;
 
 	/**
-	 * Entry gname.
+	 * @inheritdoc
 	 */
 	public readonly gname: null = null;
 
 	/**
-	 * Entry atime.
+	 * @inheritdoc
 	 */
 	public readonly atime: Date;
 
 	/**
-	 * Entry mtime.
+	 * @inheritdoc
 	 */
 	public readonly mtime: Date;
 
@@ -166,18 +166,17 @@ export class EntryDir extends Entry {
  */
 export class ArchiveDir extends Archive {
 	/**
-	 * List of file extensions, or null.
-	 * All subclasses should implement this property.
+	 * @inheritdoc
 	 */
 	public static readonly FILE_EXTENSIONS: string[] | null = null;
 
 	/**
-	 * Entry constructor.
+	 * @inheritdoc
 	 */
 	public readonly Entry = EntryDir;
 
 	/**
-	 * Limit to directory reading to subpaths.
+	 * Limit the directory reading to subpaths.
 	 */
 	public subpaths: Readonly<string>[] | null = null;
 
@@ -191,22 +190,14 @@ export class ArchiveDir extends Archive {
 	}
 
 	/**
-	 * Read archive.
-	 * If the itter callback returns false, reading ends.
-	 * If the itter callback returns null, skip descent.
-	 *
-	 * @param itter Async callback for each archive entry.
+	 * @inheritdoc
 	 */
 	public async read(itter: (entry: EntryDir) => Promise<unknown>) {
 		await super.read(itter);
 	}
 
 	/**
-	 * Read archive, class implementation.
-	 * If the itter callback returns false, reading ends.
-	 * If the itter callback returns null, skip descent.
-	 *
-	 * @param itter Async callback for each archive entry.
+	 * @inheritdoc
 	 */
 	protected async _read(itter: (entry: EntryDir) => Promise<unknown>) {
 		/**

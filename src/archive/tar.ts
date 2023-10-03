@@ -65,57 +65,52 @@ const streamFromBufferListGenerator = (gen: AsyncGenerator<IBufferList>) => {
 
 export interface IEntryInfoTar extends IEntryInfo {
 	/**
-	 * Entry archive.
+	 * @inheritdoc
 	 */
 	archive: ArchiveTar;
 
 	/**
-	 * Entry path, raw.
-	 */
-	pathRaw: string;
-
-	/**
-	 * Entry size.
+	 * @inheritdoc
 	 */
 	size: number;
 
 	/**
-	 * Entry size, compressed.
+	 * @inheritdoc
 	 */
 	sizeComp?: null;
 
 	/**
-	 * Entry mode.
+	 * @inheritdoc
 	 */
 	mode: number;
 
 	/**
-	 * Entry uid.
+	 * @inheritdoc
 	 */
 	uid: number;
 
 	/**
-	 * Entry gid.
+	 * @inheritdoc
 	 */
 	gid: number;
 
 	/**
-	 * Entry uname.
+	 * @inheritdoc
 	 */
 	uname?: string;
 
 	/**
-	 * Entry gname.
+	 * @inheritdoc
 	 */
 	gname?: string;
 
 	/**
-	 * Entry atime.
+	 * @inheritdoc
 	 */
 	atime?: null;
 
 	/**
-	 * Entry mtime.
+	 * @inheritdoc
 	 */
 	mtime: Date;
 
@@ -125,7 +120,7 @@ export interface IEntryInfoTar extends IEntryInfo {
 	linkname: string | null;
 
 	/**
-	 * Read rsrc.
+	 * @inheritdoc
 	 */
 	readRsrc?: null;
 }
@@ -135,52 +130,52 @@ export interface IEntryInfoTar extends IEntryInfo {
  */
 export class EntryTar extends Entry {
 	/**
-	 * Entry archive.
+	 * @inheritdoc
 	 */
 	public readonly archive: ArchiveTar;
 
 	/**
-	 * Entry size.
+	 * @inheritdoc
 	 */
 	public readonly size: number;
 
 	/**
-	 * Entry size, compressed.
+	 * @inheritdoc
 	 */
 	public readonly sizeComp: null = null;
 
 	/**
-	 * Entry mode.
+	 * @inheritdoc
 	 */
 	public readonly mode: number;
 
 	/**
-	 * Entry uid.
+	 * @inheritdoc
 	 */
 	public readonly uid: number;
 
 	/**
-	 * Entry gid.
+	 * @inheritdoc
 	 */
 	public readonly gid: number;
 
 	/**
-	 * Entry uname.
+	 * @inheritdoc
 	 */
 	public readonly uname: string | null;
 
 	/**
-	 * Entry gname.
+	 * @inheritdoc
 	 */
 	public readonly gname: string | null;
 
 	/**
-	 * Entry atime.
+	 * @inheritdoc
 	 */
 	public readonly atime: null = null;
 
 	/**
-	 * Entry mtime.
+	 * @inheritdoc
 	 */
 	public readonly mtime: Date;
 
@@ -190,7 +185,7 @@ export class EntryTar extends Entry {
 	public readonly linkname: string | null;
 
 	/**
-	 * Read rsrc.
+	 * @inheritdoc
 	 */
 	protected readonly _readRsrc: null = null;
 
@@ -219,13 +214,12 @@ export class EntryTar extends Entry {
  */
 export class ArchiveTar extends Archive {
 	/**
-	 * List of file extensions, or null.
-	 * All subclasses should implement this property.
+	 * @inheritdoc
 	 */
 	public static readonly FILE_EXTENSIONS: string[] | null = ['.tar'];
 
 	/**
-	 * Entry constructor.
+	 * @inheritdoc
 	 */
 	public readonly Entry = EntryTar;
 
@@ -239,20 +233,14 @@ export class ArchiveTar extends Archive {
 	}
 
 	/**
-	 * Read archive, class implementation.
-	 * If the itter callback returns false, reading ends.
-	 *
-	 * @param itter Async callback for each archive entry.
+	 * @inheritdoc
 	 */
 	public async read(itter: (entry: EntryTar) => Promise<unknown>) {
 		await super.read(itter);
 	}
 
 	/**
-	 * Read archive, class implementation.
-	 * If the itter callback returns false, reading ends.
-	 *
-	 * @param itter Async callback for each archive entry.
+	 * @inheritdoc
 	 */
 	protected async _read(itter: (entry: EntryTar) => Promise<unknown>) {
 		/**
@@ -358,7 +346,7 @@ export class ArchiveTar extends Archive {
 	 * A async buffer generator to decopress if needed.
 	 *
 	 * @param input Buffer generator.
-	 * @yields Decopressed data.
+	 * @yields Decompressed data.
 	 */
 	protected async *_decompress(input: AsyncGenerator<Buffer>) {
 		// Plain tar files are not compressed, just pass data through.

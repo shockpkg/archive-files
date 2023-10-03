@@ -61,47 +61,47 @@ export interface IZipEntryExtraField {
 
 export interface IEntryInfoZip extends IEntryInfo {
 	/**
-	 * Entry archive.
+	 * @inheritdoc
 	 */
 	archive: ArchiveZip;
 
 	/**
-	 * Entry size.
+	 * @inheritdoc
 	 */
 	size: number;
 
 	/**
-	 * Entry size, compressed.
+	 * @inheritdoc
 	 */
 	sizeComp: number;
 
 	/**
-	 * Entry uid.
+	 * @inheritdoc
 	 */
 	uid?: null;
 
 	/**
-	 * Entry gid.
+	 * @inheritdoc
 	 */
 	gid?: null;
 
 	/**
-	 * Entry uname.
+	 * @inheritdoc
 	 */
 	uname?: null;
 
 	/**
-	 * Entry gname.
+	 * @inheritdoc
 	 */
 	gname?: null;
 
 	/**
-	 * Entry atime.
+	 * @inheritdoc
 	 */
 	atime?: null;
 
 	/**
-	 * Entry mtime.
+	 * @inheritdoc
 	 */
 	mtime: Date;
 
@@ -161,7 +161,7 @@ export interface IEntryInfoZip extends IEntryInfo {
 	extraFields: IZipEntryExtraField[];
 
 	/**
-	 * Read rsrc.
+	 * @inheritdoc
 	 */
 	readRsrc?: null;
 }
@@ -171,47 +171,47 @@ export interface IEntryInfoZip extends IEntryInfo {
  */
 export class EntryZip extends Entry {
 	/**
-	 * Entry archive.
+	 * @inheritdoc
 	 */
 	public readonly archive: ArchiveZip;
 
 	/**
-	 * Entry size.
+	 * @inheritdoc
 	 */
 	public readonly size: number;
 
 	/**
-	 * Entry size, compressed.
+	 * @inheritdoc
 	 */
 	public readonly sizeComp: number;
 
 	/**
-	 * Entry uid.
+	 * @inheritdoc
 	 */
 	public readonly uid: null = null;
 
 	/**
-	 * Entry gid.
+	 * @inheritdoc
 	 */
 	public readonly gid: null = null;
 
 	/**
-	 * Entry uname.
+	 * @inheritdoc
 	 */
 	public readonly uname: null = null;
 
 	/**
-	 * Entry gname.
+	 * @inheritdoc
 	 */
 	public readonly gname: null = null;
 
 	/**
-	 * Entry atime.
+	 * @inheritdoc
 	 */
 	public readonly atime: null = null;
 
 	/**
-	 * Entry mtime.
+	 * @inheritdoc
 	 */
 	public readonly mtime: Date;
 
@@ -271,7 +271,7 @@ export class EntryZip extends Entry {
 	public readonly extraFields: IZipEntryExtraField[];
 
 	/**
-	 * Read rsrc.
+	 * @inheritdoc
 	 */
 	protected readonly _readRsrc: null = null;
 
@@ -306,10 +306,14 @@ export class EntryZip extends Entry {
  */
 export class ArchiveZip extends Archive {
 	/**
-	 * List of file extensions, or null.
-	 * All subclasses should implement this property.
+	 * @inheritdoc
 	 */
 	public static readonly FILE_EXTENSIONS: string[] | null = ['.zip'];
+
+	/**
+	 * @inheritdoc
+	 */
+	public readonly Entry = EntryZip;
 
 	/**
 	 * ArchiveZip constructor.
@@ -321,20 +325,14 @@ export class ArchiveZip extends Archive {
 	}
 
 	/**
-	 * Read archive.
-	 * If the itter callback returns false, reading ends.
-	 *
-	 * @param itter Async callback for each archive entry.
+	 * @inheritdoc
 	 */
 	public async read(itter: (entry: EntryZip) => Promise<unknown>) {
 		await super.read(itter);
 	}
 
 	/**
-	 * Read archive, class implementation.
-	 * If the itter callback returns false, reading ends.
-	 *
-	 * @param itter Async callback for each archive entry.
+	 * @inheritdoc
 	 */
 	protected async _read(itter: (entry: EntryZip) => Promise<unknown>) {
 		const Static = this.constructor as typeof ArchiveZip;
@@ -401,7 +399,7 @@ export class ArchiveZip extends Archive {
 					? async () => yauzlEntryReadSymlink(zipfile, yentry)
 					: null;
 
-			const entry = new EntryZip({
+			const entry = new this.Entry({
 				archive: this,
 				type,
 				pathRaw: fileName,
