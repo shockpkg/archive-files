@@ -737,9 +737,7 @@ export abstract class Entry {
 			throw new Error('Internal error');
 		}
 		const r = new Readable({
-			/**
-			 * Read method.
-			 */
+			// eslint-disable-next-line jsdoc/require-jsdoc
 			read: () => {
 				readSymlink().then(
 					d => {
@@ -763,7 +761,7 @@ export abstract class Archive {
 	/**
 	 * List of file extensions, or null.
 	 */
-	public static readonly FILE_EXTENSIONS: string[] | null = null;
+	public static readonly FILE_EXTENSIONS: Readonly<string[]> | null = null;
 
 	/**
 	 * Archive has named volumes that each entry will be under.

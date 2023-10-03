@@ -173,7 +173,7 @@ export class ArchiveHdi extends Archive {
 	/**
 	 * @inheritdoc
 	 */
-	public static readonly FILE_EXTENSIONS: string[] | null = [
+	public static readonly FILE_EXTENSIONS: Readonly<string[]> | null = [
 		'.dmg',
 		'.iso',
 		'.cdr'

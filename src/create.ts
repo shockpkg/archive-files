@@ -42,11 +42,11 @@ function archivesExtensions() {
 	// List all the extension and archive pairs.
 	const all: IArchiveExt[] = [];
 	for (const Archive of archives) {
-		const exts = Archive.FILE_EXTENSIONS;
-		if (!exts) {
+		const {FILE_EXTENSIONS} = Archive;
+		if (!FILE_EXTENSIONS) {
 			continue;
 		}
-		for (const ext of exts) {
+		for (const ext of FILE_EXTENSIONS) {
 			all.push({
 				Archive,
 				ext: ext.toLowerCase()

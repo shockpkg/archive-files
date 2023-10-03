@@ -308,7 +308,9 @@ export class ArchiveZip extends Archive {
 	/**
 	 * @inheritdoc
 	 */
-	public static readonly FILE_EXTENSIONS: string[] | null = ['.zip'];
+	public static readonly FILE_EXTENSIONS: Readonly<string[]> | null = [
+		'.zip'
+	];
 
 	/**
 	 * @inheritdoc

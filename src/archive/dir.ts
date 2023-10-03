@@ -168,7 +168,7 @@ export class ArchiveDir extends Archive {
 	/**
 	 * @inheritdoc
 	 */
-	public static readonly FILE_EXTENSIONS: string[] | null = null;
+	public static readonly FILE_EXTENSIONS: Readonly<string[]> | null = null;
 
 	/**
 	 * @inheritdoc

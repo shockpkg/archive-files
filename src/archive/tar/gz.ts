@@ -9,7 +9,7 @@ export class ArchiveTarGz extends ArchiveTar {
 	/**
 	 * @inheritdoc
 	 */
-	public static readonly FILE_EXTENSIONS: string[] | null = [
+	public static readonly FILE_EXTENSIONS: Readonly<string[]> | null = [
 		'.tar.gz',
 		'.tgz'
 	];

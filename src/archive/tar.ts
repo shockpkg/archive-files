@@ -216,7 +216,9 @@ export class ArchiveTar extends Archive {
 	/**
 	 * @inheritdoc
 	 */
-	public static readonly FILE_EXTENSIONS: string[] | null = ['.tar'];
+	public static readonly FILE_EXTENSIONS: Readonly<string[]> | null = [
+		'.tar'
+	];
 
 	/**
 	 * @inheritdoc
