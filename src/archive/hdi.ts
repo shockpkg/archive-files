@@ -220,7 +220,7 @@ export class ArchiveHdi extends Archive {
 	 */
 	public cleanup() {
 		const active = this._active;
-		for (const a of this._active) {
+		for (const a of active) {
 			a.signal.abort = true;
 			// eslint-disable-next-line no-sync
 			a.info.ejectSync({
