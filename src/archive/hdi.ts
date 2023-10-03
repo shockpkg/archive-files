@@ -3,11 +3,12 @@
 import {Stats, createReadStream} from 'node:fs';
 import {basename, join as pathJoin} from 'node:path';
 
-import {Mounter} from '@shockpkg/hdi-mac';
+import {IMounterAttachInfo, Mounter} from '@shockpkg/hdi-mac';
 
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
 import {
+	IFsWalkSignal,
 	fsLstatExists,
 	fsReadlinkRaw,
 	fsWalk,
@@ -196,6 +197,11 @@ export class ArchiveHdi extends Archive {
 	 */
 	public nobrowse = false;
 
+	protected _active = new Set<{
+		info: IMounterAttachInfo;
+		signal: IFsWalkSignal;
+	}>();
+
 	/**
 	 * ArchiveHdi constructor.
 	 *
@@ -203,6 +209,23 @@ export class ArchiveHdi extends Archive {
 	 */
 	constructor(path: string) {
 		super(path);
+	}
+
+	/**
+	 * Call this to eject actively open disk images on shutdown.
+	 *
+	 * @inheritdoc
+	 */
+	public cleanup() {
+		const active = this._active;
+		for (const a of this._active) {
+			a.signal.abort = true;
+			// eslint-disable-next-line no-sync
+			a.info.ejectSync({
+				force: true
+			});
+			active.delete(a);
+		}
 	}
 
 	/**
@@ -323,6 +346,10 @@ export class ArchiveHdi extends Archive {
 			readonly: true
 		});
 
+		const signal = {};
+		const active = {info, signal};
+		this._active.add(active);
+
 		// Eject device when done.
 		try {
 			for (const device of info.devices) {
@@ -340,11 +367,13 @@ export class ArchiveHdi extends Archive {
 						const pathRaw = pathJoin(volumeName, pathRel);
 						return each(pathFull, pathRaw, stat);
 					},
-					walkOpts
+					walkOpts,
+					signal
 				);
 			}
 		} finally {
 			await info.eject();
+			this._active.delete(active);
 		}
 	}
 }

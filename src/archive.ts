@@ -862,6 +862,15 @@ export abstract class Archive {
 	}
 
 	/**
+	 * Syncronously cleanup temporary resources.
+	 * Can be called on shutdown/abort/signals to free resources.
+	 * Not applicable to most archive formats.
+	 */
+	public cleanup() {
+		// Do nothing.
+	}
+
+	/**
 	 * Read archive.
 	 * If the itter callback returns false, reading ends.
 	 * If the itter callback returns null, skip descent where available.
