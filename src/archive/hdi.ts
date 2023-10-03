@@ -3,7 +3,7 @@
 import {Stats, createReadStream} from 'node:fs';
 import {basename, join as pathJoin} from 'node:path';
 
-import {IMounterAttachInfo, Mounter} from '@shockpkg/hdi-mac';
+import {Mounter} from '@shockpkg/hdi-mac';
 
 import {Archive, Entry, IEntryInfo} from '../archive';
 import {PathType} from '../types';
@@ -312,23 +312,15 @@ export class ArchiveHdi extends Archive {
 			return true;
 		};
 
-		let info: IMounterAttachInfo | null = null;
-
-		/**
-		 * Attempt to auto-eject on normal shutdown.
-		 * Does not catch signals (no clean way in a library).
-		 * Users can explicitly call process.exit() on signals to invoke this.
-		 */
-		const shutdown = () => {
-			// eslint-disable-next-line no-sync
-			info?.ejectSync(ejectOptions);
-		};
-		process.once('exit', shutdown);
-
-		info = await mounterMac.attach(this.path, {
-			nobrowse,
-			readonly: true
-		});
+		// Using auto-eject on normal exit option.
+		const info = await mounterMac.attach(
+			this.path,
+			{
+				nobrowse,
+				readonly: true
+			},
+			ejectOptions
+		);
 
 		// Eject device when done.
 		try {
@@ -352,8 +344,6 @@ export class ArchiveHdi extends Archive {
 			}
 		} finally {
 			await info.eject(ejectOptions);
-			info = null;
-			process.off('exit', shutdown);
 		}
 	}
 }
