@@ -1,3 +1,5 @@
+import {stat} from 'node:fs/promises';
+
 import {Archive} from './archive';
 import {ArchiveDir} from './archive/dir';
 import {ArchiveHdi} from './archive/hdi';
@@ -5,6 +7,15 @@ import {ArchiveTar} from './archive/tar';
 import {ArchiveTarBz2} from './archive/tar/bz2';
 import {ArchiveTarGz} from './archive/tar/gz';
 import {ArchiveZip} from './archive/zip';
+
+export interface ICreateArchiveOptions {
+	/**
+	 * Set the nobrowse option on mounted disk images.
+	 *
+	 * @default false
+	 */
+	nobrowse?: boolean;
+}
 
 const archives: (typeof Archive)[] = [
 	ArchiveDir,
@@ -60,20 +71,47 @@ function archivesExtensions() {
 }
 
 /**
- * Create an Archive instance for a given path, based on file extension.
+ * Create an Archive instance for a given path.
+ * Based on file extension.
  *
  * @param path File path.
+ * @param options Optional options.
  * @returns Archive instance or null.
  */
-export function createArchiveByFileExtension(path: string) {
+export function createArchiveByFileExtension(
+	path: string,
+	options: Readonly<ICreateArchiveOptions> | null = null
+) {
 	const pathLower = path.toLowerCase();
 	const list = archivesExtensions();
 	for (const {Archive, ext} of list) {
 		if (pathLower.endsWith(ext)) {
-			return new (Archive as unknown as new (path: string) => Archive)(
+			const a = new (Archive as unknown as new (path: string) => Archive)(
 				path
 			);
+			if (options && a instanceof ArchiveHdi) {
+				a.nobrowse = options.nobrowse ?? false;
+			}
+			return a;
 		}
 	}
 	return null;
+}
+
+/**
+ * Create an Archive instance for a given path.
+ * Based on file extension or if a directory.
+ *
+ * @param path File path.
+ * @param options Optional options.
+ * @returns Archive instance or null.
+ */
+export async function createArchiveByFileStat(
+	path: string,
+	options: Readonly<ICreateArchiveOptions> | null = null
+) {
+	const st = await stat(path);
+	return st.isDirectory()
+		? new ArchiveDir(path)
+		: createArchiveByFileExtension(path, options);
 }
