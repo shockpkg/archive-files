@@ -110,8 +110,8 @@ export async function createArchiveByFileStat(
 	path: string,
 	options: Readonly<ICreateArchiveOptions> | null = null
 ) {
-	const st = await stat(path);
-	return st.isDirectory()
+	const st = await stat(path).catch(() => null);
+	return st?.isDirectory()
 		? new ArchiveDir(path)
 		: createArchiveByFileExtension(path, options);
 }
