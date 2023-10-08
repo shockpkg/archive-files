@@ -114,7 +114,7 @@ export function createArchiveByFileExtensionOrThrow(
 	if (!a) {
 		throw new Error(`Unsupported archive format: ${path}`);
 	}
-	return null;
+	return a;
 }
 
 /**
