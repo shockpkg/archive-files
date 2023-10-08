@@ -100,6 +100,25 @@ export function createArchiveByFileExtension(
 
 /**
  * Create an Archive instance for a given path.
+ * Based on file extension.
+ *
+ * @param path File path.
+ * @param options Optional options.
+ * @returns Archive instance.
+ */
+export function createArchiveByFileExtensionOrThrow(
+	path: string,
+	options: Readonly<ICreateArchiveOptions> | null = null
+) {
+	const a = createArchiveByFileExtension(path, options);
+	if (!a) {
+		throw new Error(`Unsupported archive format: ${path}`);
+	}
+	return null;
+}
+
+/**
+ * Create an Archive instance for a given path.
  * Based on file extension or if a directory.
  *
  * @param path File path.
@@ -117,4 +136,22 @@ export async function createArchiveByFileStat(
 	return st.isDirectory()
 		? new ArchiveDir(path)
 		: createArchiveByFileExtension(path, options);
+}
+
+/**
+ * Create an Archive instance for a given path.
+ * Based on file extension or if a directory.
+ *
+ * @param path File path.
+ * @param options Optional options.
+ * @returns Archive instance.
+ */
+export async function createArchiveByFileStatOrThrow(
+	path: string,
+	options: Readonly<ICreateArchiveOptions> | null = null
+) {
+	const st = await stat(path);
+	return st.isDirectory()
+		? new ArchiveDir(path)
+		: createArchiveByFileExtensionOrThrow(path, options);
 }
