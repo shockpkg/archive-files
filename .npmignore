@@ -34,7 +34,6 @@ yarn.lock
 /tsconfig.json
 /tsconfig.eslint.json
 /spec
-/src
 
 /dts/**/*.test.d.ts
 /esm/**/*.test.mjs
