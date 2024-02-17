@@ -330,7 +330,7 @@ export class ArchiveZip extends Archive {
 	 * @inheritdoc
 	 */
 	public async read(itter: (entry: EntryZip) => Promise<unknown>) {
-		await super.read(itter);
+		await super.read(itter as (entry: Entry) => Promise<unknown>);
 	}
 
 	/**

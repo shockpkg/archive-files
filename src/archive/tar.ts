@@ -238,7 +238,7 @@ export class ArchiveTar extends Archive {
 	 * @inheritdoc
 	 */
 	public async read(itter: (entry: EntryTar) => Promise<unknown>) {
-		await super.read(itter);
+		await super.read(itter as (entry: Entry) => Promise<unknown>);
 	}
 
 	/**
