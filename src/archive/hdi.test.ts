@@ -30,7 +30,7 @@ void describe('archive/hdi', () => {
 						'test-archive-hfsp-j-c.dmg',
 						'test-archive-apfs.dmg',
 						'test-archive-apfs-c.dmg'
-				  ]
+					]
 				: [],
 			true,
 			s => pathJoin(specFixturesPath, s)

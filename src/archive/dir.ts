@@ -219,8 +219,8 @@ export class ArchiveDir extends Archive {
 			const readData =
 				type === PathType.FILE
 					? // eslint-disable-next-line max-len
-					  // eslint-disable-next-line @typescript-eslint/require-await
-					  async () => createReadStream(pathFull)
+						// eslint-disable-next-line @typescript-eslint/require-await
+						async () => createReadStream(pathFull)
 					: null;
 
 			const readSymlink =

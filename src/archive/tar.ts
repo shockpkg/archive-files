@@ -288,7 +288,7 @@ export class ArchiveTar extends Archive {
 				type === PathType.FILE ? async () => stream() : null;
 			const readSymlink = linknameBuffer
 				? // eslint-disable-next-line @typescript-eslint/require-await
-				  async () => linknameBuffer
+					async () => linknameBuffer
 				: null;
 
 			// If a symbolic link, make it the size of the link data, not 0.
