@@ -212,7 +212,7 @@ export class ArchiveHdi extends Archive {
 	 * @inheritdoc
 	 */
 	public async read(itter: (entry: EntryHdi) => Promise<unknown>) {
-		await super.read(itter);
+		await super.read(itter as Parameters<Archive['read']>[0]);
 	}
 
 	/**

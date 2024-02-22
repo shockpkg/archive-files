@@ -193,7 +193,7 @@ export class ArchiveDir extends Archive {
 	 * @inheritdoc
 	 */
 	public async read(itter: (entry: EntryDir) => Promise<unknown>) {
-		await super.read(itter);
+		await super.read(itter as Parameters<Archive['read']>[0]);
 	}
 
 	/**
