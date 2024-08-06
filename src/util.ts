@@ -12,7 +12,7 @@ import {join as pathJoin} from 'node:path';
 import {Readable, Writable} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 
-import {PathType} from './types';
+import {PathType} from './types.ts';
 
 export interface IFsWalkOptions {
 	/**

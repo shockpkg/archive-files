@@ -8,8 +8,8 @@ import {join as pathJoin} from 'node:path';
 import {Readable, Writable} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 
-import {Archive, Entry, IEntryInfo} from './archive';
-import {PathType} from './types';
+import {Archive, Entry, IEntryInfo} from './archive.ts';
+import {PathType} from './types.ts';
 import {
 	fsLchmodSupported,
 	fsLstat,
@@ -17,7 +17,7 @@ import {
 	modePermissionBits,
 	pathResourceFork,
 	streamToBuffer
-} from './util';
+} from './util.ts';
 
 export const specTmpPath = (
 	(i: number) => (s: string) =>

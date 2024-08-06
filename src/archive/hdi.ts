@@ -5,8 +5,8 @@ import {basename, join as pathJoin} from 'node:path';
 
 import {Mounter} from '@shockpkg/hdi-mac';
 
-import {Archive, Entry, IEntryInfo} from '../archive';
-import {PathType} from '../types';
+import {Archive, Entry, IEntryInfo} from '../archive.ts';
+import {PathType} from '../types.ts';
 import {
 	fsLstatExists,
 	fsReadlinkRaw,
@@ -14,7 +14,7 @@ import {
 	pathNormalize,
 	pathResourceFork,
 	statToPathType
-} from '../util';
+} from '../util.ts';
 
 const walkOpts = {
 	ignoreUnreadableDirectories: true

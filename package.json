@@ -78,7 +78,7 @@
 		"@types/node": "^22.1.0",
 		"@types/unbzip2-stream": "^1.4.3",
 		"@types/yauzl": "^2.10.3",
-		"babel-plugin-esm-resolver": "^3.0.0",
+		"babel-plugin-module-replace": "^1.0.1",
 		"babel-plugin-search-and-replace": "^1.1.1",
 		"eslint": "^9.8.0",
 		"eslint-config-prettier": "^9.1.0",

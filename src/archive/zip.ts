@@ -4,9 +4,9 @@ import {Readable} from 'node:stream';
 
 import yauzl from 'yauzl';
 
-import {Archive, Entry, IEntryInfo} from '../archive';
-import {PathType} from '../types';
-import {modeToPathType, streamToBuffer} from '../util';
+import {Archive, Entry, IEntryInfo} from '../archive.ts';
+import {PathType} from '../types.ts';
+import {modeToPathType, streamToBuffer} from '../util.ts';
 
 /**
  * Read entry.

@@ -1,7 +1,7 @@
 import {describe, it} from 'node:test';
 import {ok, strictEqual} from 'node:assert';
 
-import {createArchiveByFileExtension} from './create';
+import {createArchiveByFileExtension} from './create.ts';
 
 void describe('create', () => {
 	void describe('createArchiveByFileExtension', () => {

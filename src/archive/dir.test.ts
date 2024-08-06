@@ -8,10 +8,10 @@ import {
 	platformIsWin,
 	safeToExtract,
 	testArchive
-} from '../archive.spec';
-import {PathType} from '../types';
+} from '../archive.spec.ts';
+import {PathType} from '../types.ts';
 
-import {ArchiveDir} from './dir';
+import {ArchiveDir} from './dir.ts';
 
 void describe('archive/dir', () => {
 	void describe('ArchiveDir', () => {

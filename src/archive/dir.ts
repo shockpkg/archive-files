@@ -3,8 +3,8 @@
 import {Stats, createReadStream} from 'node:fs';
 import {join as pathJoin} from 'node:path';
 
-import {Archive, Entry, IEntryInfo} from '../archive';
-import {PathType} from '../types';
+import {Archive, Entry, IEntryInfo} from '../archive.ts';
+import {PathType} from '../types.ts';
 import {
 	fsLstat,
 	fsLstatExists,
@@ -13,7 +13,7 @@ import {
 	pathNormalize,
 	pathResourceFork,
 	statToPathType
-} from '../util';
+} from '../util.ts';
 
 const walkOpts = {
 	ignoreUnreadableDirectories: true

@@ -1,6 +1,6 @@
 import {describe} from 'node:test';
 
-import {ArchiveTest, testArchive} from './archive.spec';
+import {ArchiveTest, testArchive} from './archive.spec.ts';
 
 void describe('archive', () => {
 	void describe('Archive', () => {

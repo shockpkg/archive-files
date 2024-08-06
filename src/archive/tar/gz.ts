@@ -1,6 +1,6 @@
 import {createGunzip} from 'node:zlib';
 
-import {ArchiveTar} from '../tar';
+import {ArchiveTar} from '../tar.ts';
 
 /**
  * ArchiveTarGz object.

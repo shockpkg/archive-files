@@ -1,6 +1,6 @@
 import unbzip2Stream from 'unbzip2-stream';
 
-import {ArchiveTar} from '../tar';
+import {ArchiveTar} from '../tar.ts';
 
 /**
  * ArchiveTarBz2 object.

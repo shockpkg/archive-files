@@ -8,7 +8,7 @@ import {promisify} from 'node:util';
 
 const pipe = promisify(pipeline);
 
-import {PathType} from './types';
+import {PathType} from './types.ts';
 import {
 	fsChmod,
 	fsLchmod,
@@ -20,7 +20,7 @@ import {
 	pathNormalize,
 	pathResourceFork,
 	streamToBuffer
-} from './util';
+} from './util.ts';
 
 export interface IArchiveAfterReadSetAttributesEntry {
 	/**

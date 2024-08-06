@@ -2,9 +2,9 @@ import {describe, it} from 'node:test';
 import {deepStrictEqual} from 'node:assert';
 import {join as pathJoin} from 'node:path';
 
-import {platformIsMac, specFixturesPath, testArchive} from '../archive.spec';
+import {platformIsMac, specFixturesPath, testArchive} from '../archive.spec.ts';
 
-import {ArchiveHdi} from './hdi';
+import {ArchiveHdi} from './hdi.ts';
 
 // eslint-disable-next-line no-process-env
 const NO_HDI = /^(1|true|yes)$/i.test(process.env['SHOCKPKG_NO_HDI'] || '');

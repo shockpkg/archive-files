@@ -2,7 +2,7 @@ import {describe, it} from 'node:test';
 import {strictEqual} from 'node:assert';
 import {mkdir, rm} from 'node:fs/promises';
 
-import {fsLstatExists, pathNormalize, fsSymlink} from './util';
+import {fsLstatExists, pathNormalize, fsSymlink} from './util.ts';
 
 async function withSymlinksDir(f: (dir: string) => unknown) {
 	const dir = 'spec/tmp/symlinks';

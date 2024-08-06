@@ -3,8 +3,8 @@
 import {createReadStream} from 'node:fs';
 import {Readable} from 'node:stream';
 
-import {Archive, Entry, IEntryInfo} from '../archive';
-import {PathType} from '../types';
+import {Archive, Entry, IEntryInfo} from '../archive.ts';
+import {PathType} from '../types.ts';
 
 // Based on it-tar TarEntryHeader.
 interface IHeader {

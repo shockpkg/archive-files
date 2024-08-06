@@ -2,9 +2,9 @@ import {describe, it} from 'node:test';
 import {deepStrictEqual} from 'node:assert';
 import {join as pathJoin} from 'node:path';
 
-import {specFixturesPath, testArchive} from '../archive.spec';
+import {specFixturesPath, testArchive} from '../archive.spec.ts';
 
-import {ArchiveTar} from './tar';
+import {ArchiveTar} from './tar.ts';
 
 void describe('archive/tar', () => {
 	void describe('ArchiveTar', () => {

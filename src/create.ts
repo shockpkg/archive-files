@@ -1,12 +1,12 @@
 import {stat} from 'node:fs/promises';
 
-import {Archive} from './archive';
-import {ArchiveDir} from './archive/dir';
-import {ArchiveHdi} from './archive/hdi';
-import {ArchiveTar} from './archive/tar';
-import {ArchiveTarBz2} from './archive/tar/bz2';
-import {ArchiveTarGz} from './archive/tar/gz';
-import {ArchiveZip} from './archive/zip';
+import {Archive} from './archive.ts';
+import {ArchiveDir} from './archive/dir.ts';
+import {ArchiveHdi} from './archive/hdi.ts';
+import {ArchiveTar} from './archive/tar.ts';
+import {ArchiveTarBz2} from './archive/tar/bz2.ts';
+import {ArchiveTarGz} from './archive/tar/gz.ts';
+import {ArchiveZip} from './archive/zip.ts';
 
 export interface ICreateArchiveOptions {
 	/**

@@ -1,2 +1,2 @@
-export * from './bz2';
-export * from './gz';
+export * from './bz2.ts';
+export * from './gz.ts';
