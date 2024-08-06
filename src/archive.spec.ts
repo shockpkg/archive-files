@@ -61,7 +61,6 @@ const testEntries = [
 		type: PathType.FILE,
 		pathRaw: 'file.txt',
 		size: 8,
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('foo bar\n'))
 	},
 	{
@@ -71,19 +70,16 @@ const testEntries = [
 	{
 		type: PathType.SYMLINK,
 		pathRaw: 'symlink',
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readSymlink: async () => Buffer.from('target')
 	},
 	{
 		type: PathType.FILE,
 		pathRaw: 'directory/subfile.txt',
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('sub file\n'))
 	},
 	{
 		type: PathType.FILE,
 		pathRaw: 'unknown/orphaned.txt',
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('sub file\n'))
 	},
 	{
@@ -92,7 +88,6 @@ const testEntries = [
 		mode: 0o644,
 		atime: new Date('2013-02-16'),
 		mtime: new Date('2014-03-24'),
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () =>
 			bufferToStream(Buffer.from('#!/bin/sh\necho nonexecutable\n'))
 	},
@@ -102,7 +97,6 @@ const testEntries = [
 		mode: 0o755,
 		atime: new Date('2013-02-16'),
 		mtime: new Date('2014-03-24'),
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () =>
 			bufferToStream(Buffer.from('#!/bin/sh\necho executable\n'))
 	},
@@ -112,7 +106,6 @@ const testEntries = [
 		mode: 0o644,
 		atime: new Date('2013-02-16'),
 		mtime: new Date('2014-03-24'),
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readSymlink: async () => Buffer.from('target')
 	},
 	{
@@ -121,7 +114,6 @@ const testEntries = [
 		mode: 0o755,
 		atime: new Date('2013-02-16'),
 		mtime: new Date('2014-03-24'),
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readSymlink: async () => Buffer.from('target')
 	},
 	{
@@ -134,7 +126,6 @@ const testEntries = [
 	{
 		type: PathType.FILE,
 		pathRaw: 'dir-owner/sub.txt',
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('sub file\n'))
 	},
 	{
@@ -147,21 +138,18 @@ const testEntries = [
 	{
 		type: PathType.FILE,
 		pathRaw: 'dir-group/sub.txt',
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('sub file\n'))
 	},
 	{
 		type: PathType.FILE,
 		pathRaw: 'rsrc-content.bin',
 		size: 4,
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readData: async () => bufferToStream(Buffer.from('data'))
 	},
 	{
 		type: PathType.RESOURCE_FORK,
 		pathRaw: 'rsrc-content.bin',
 		size: 9,
-		// eslint-disable-next-line @typescript-eslint/require-await
 		readRsrc: async () => bufferToStream(Buffer.from('rsrc fork'))
 	}
 ];
@@ -219,7 +207,6 @@ export function testArchive(
 	};
 
 	for (const path of paths) {
-		// eslint-disable-next-line no-loop-func
 		void describe(path, () => {
 			void describe('read', () => {
 				void it('stream', async () => {
@@ -360,7 +347,6 @@ export function testArchive(
 						const archive = new ArchiveConstructor(path);
 
 						let count = 0;
-						// eslint-disable-next-line @typescript-eslint/require-await
 						await archive.read(async entry => {
 							count++;
 							return false;
@@ -411,7 +397,6 @@ export function testArchive(
 							const archive = new ArchiveConstructor(path);
 
 							const seen: string[] = [];
-							// eslint-disable-next-line @typescript-eslint/require-await
 							await archive.read(async entry => {
 								const {path} = entry;
 								for (const p of seen) {

@@ -49,7 +49,6 @@ void describe('archive/dir', () => {
 			a.subpaths = subpaths;
 
 			const filePaths: [string, PathType][] = [];
-			// eslint-disable-next-line @typescript-eslint/require-await
 			await a.read(async entry => {
 				filePaths.push([entry.path, entry.type]);
 			});

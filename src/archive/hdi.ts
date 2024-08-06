@@ -173,7 +173,7 @@ export class ArchiveHdi extends Archive {
 	/**
 	 * @inheritdoc
 	 */
-	public static readonly FILE_EXTENSIONS: Readonly<string[]> | null = [
+	public static readonly FILE_EXTENSIONS: readonly string[] | null = [
 		'.dmg',
 		'.iso',
 		'.cdr'
@@ -239,9 +239,7 @@ export class ArchiveHdi extends Archive {
 
 			const readData =
 				type === PathType.FILE
-					? // eslint-disable-next-line max-len
-						// eslint-disable-next-line @typescript-eslint/require-await
-						async () => createReadStream(pathFull)
+					? async () => createReadStream(pathFull)
 					: null;
 
 			const readSymlink =
@@ -283,7 +281,6 @@ export class ArchiveHdi extends Archive {
 					 *
 					 * @returns Read stream.
 					 */
-					// eslint-disable-next-line @typescript-eslint/require-await
 					const readRsrc = async () => createReadStream(rsrcPathFull);
 
 					const entryRsrc = new this.Entry({

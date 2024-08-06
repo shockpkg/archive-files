@@ -294,7 +294,7 @@ export abstract class Entry {
 	public get volumeName() {
 		if (this.hasNamedVolume) {
 			const {path} = this;
-			return path.substring(0, path.indexOf('/'));
+			return path.slice(0, path.indexOf('/'));
 		}
 		return null;
 	}
@@ -307,7 +307,7 @@ export abstract class Entry {
 	public get volumePath() {
 		const {path} = this;
 		if (this.hasNamedVolume) {
-			return path.substring(path.indexOf('/') + 1);
+			return path.slice(path.indexOf('/') + 1);
 		}
 		return path;
 	}
@@ -576,6 +576,8 @@ export abstract class Entry {
 
 		// Write the resource fork.
 		const stream = await readRsrc();
+
+		// eslint-disable-next-line unicorn/prefer-ternary
 		if (stream) {
 			await pipe(stream, createWriteStream(pathRsrc));
 		} else {
@@ -653,6 +655,7 @@ export abstract class Entry {
 		const target = await readSymlink();
 
 		// Create link, optionally as a file.
+		// eslint-disable-next-line unicorn/prefer-ternary
 		if (symlinkAsFile) {
 			await writeFile(path, target);
 		} else {
@@ -720,7 +723,6 @@ export abstract class Entry {
 	 *
 	 * @returns Null stream.
 	 */
-	// eslint-disable-next-line @typescript-eslint/require-await
 	protected async _streamDirectory() {
 		return null;
 	}
@@ -730,7 +732,6 @@ export abstract class Entry {
 	 *
 	 * @returns Readable stream.
 	 */
-	// eslint-disable-next-line @typescript-eslint/require-await
 	protected async _streamSymlink() {
 		const readSymlink = this._readSymlink;
 		if (!readSymlink) {
@@ -742,6 +743,7 @@ export abstract class Entry {
 				readSymlink().then(
 					d => {
 						r.push(d);
+						// eslint-disable-next-line unicorn/no-array-push-push
 						r.push(null);
 					},
 					err => {
@@ -761,7 +763,7 @@ export abstract class Archive {
 	/**
 	 * List of file extensions, or null.
 	 */
-	public static readonly FILE_EXTENSIONS: Readonly<string[]> | null = null;
+	public static readonly FILE_EXTENSIONS: readonly string[] | null = null;
 
 	/**
 	 * Archive has named volumes that each entry will be under.

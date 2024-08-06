@@ -19,7 +19,7 @@ void describe('util', () => {
 	void describe('pathNormalize', () => {
 		void it('backslashes', () => {
 			strictEqual(pathNormalize('\\'), '/');
-			strictEqual(pathNormalize('\\test\\123'), '/test/123');
+			strictEqual(pathNormalize(String.raw`\test\123`), '/test/123');
 		});
 
 		void it('trailing slash', () => {

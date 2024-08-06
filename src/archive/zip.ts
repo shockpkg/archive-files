@@ -308,9 +308,7 @@ export class ArchiveZip extends Archive {
 	/**
 	 * @inheritdoc
 	 */
-	public static readonly FILE_EXTENSIONS: Readonly<string[]> | null = [
-		'.zip'
-	];
+	public static readonly FILE_EXTENSIONS: readonly string[] | null = ['.zip'];
 
 	/**
 	 * @inheritdoc
@@ -504,7 +502,7 @@ export class ArchiveZip extends Archive {
 		if (!mode) {
 			// No Unix type information, assume Windows info only.
 			// Only file or directory, with directory having a trailing slash.
-			return /[\\/]$/.test(path) ? PathType.DIRECTORY : PathType.FILE;
+			return /[/\\]$/.test(path) ? PathType.DIRECTORY : PathType.FILE;
 		}
 		return modeToPathType(mode);
 	}

@@ -52,6 +52,7 @@ const streamFromBufferListGenerator = (gen: AsyncGenerator<IBufferList>) => {
 		read: () => {
 			gen.next().then(
 				({done, value}) => {
+					// eslint-disable-next-line unicorn/prefer-spread
 					r.push(done ? null : value.slice());
 				},
 				err => {
@@ -216,9 +217,7 @@ export class ArchiveTar extends Archive {
 	/**
 	 * @inheritdoc
 	 */
-	public static readonly FILE_EXTENSIONS: Readonly<string[]> | null = [
-		'.tar'
-	];
+	public static readonly FILE_EXTENSIONS: readonly string[] | null = ['.tar'];
 
 	/**
 	 * @inheritdoc
@@ -284,11 +283,9 @@ export class ArchiveTar extends Archive {
 				linkname === null ? null : Buffer.from(linkname, 'utf8');
 
 			const readData =
-				// eslint-disable-next-line @typescript-eslint/require-await
 				type === PathType.FILE ? async () => stream() : null;
 			const readSymlink = linknameBuffer
-				? // eslint-disable-next-line @typescript-eslint/require-await
-					async () => linknameBuffer
+				? async () => linknameBuffer
 				: null;
 
 			// If a symbolic link, make it the size of the link data, not 0.
